@@ -1,0 +1,34 @@
+{
+  "name": "rupert",
+  "version": "0.1.0",
+  "description": "Static analysis of functional pattern optimization in JavaScript",
+  "bin": {
+    "rupert": "./bin/rupert"
+  },
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/btoll/rupert.git"
+  },
+  "keywords": [
+    "Esprima",
+    "functional programming",
+    "FP"
+  ],
+  "author": "Benjamin Toll <benjam72@yahoo.com> (http://www.benjamintoll.com)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/btoll/rupert/issues"
+  },
+  "homepage": "https://github.com/btoll/rupert#readme",
+  "dependencies": {
+    "esprima": "^2.7.0",
+    "yargs": "^3.30.0"
+  }
+}

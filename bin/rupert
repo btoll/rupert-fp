@@ -1,0 +1,33 @@
+#!/usr/bin/env node --harmony
+/* eslint-disable no-console */
+
+'use strict';
+
+let argv = require('yargs')
+    .usage('Usage: rupert [options]')
+
+    .demand('f')
+    .alias('f', 'file')
+    .nargs('f', 1)
+    .describe('f', 'The file to analyze')
+
+    .describe('html', 'Creates an html document of the tree')
+    .boolean('html')
+
+    .help('h')
+    .alias('h', 'help')
+    .argv,
+
+    // Default to logging to stdout.
+    printer = require(`../lib/printer/${!argv.html ? 'log' : 'html'}`),
+    makeTree = require('../lib/makeTree'),
+    file = argv.file;
+
+
+if (!file) {
+    console.log('[ERROR] No file specified');
+    return;
+}
+
+makeTree(file, printer);
+
