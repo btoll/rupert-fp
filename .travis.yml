@@ -1,0 +1,13 @@
+language: node_js
+node_js:
+  - "stable"
+  - "5"
+  - "4"
+before_install:
+  - npm i -g babel-cli
+  - npm i -g istanbul
+  - npm i -g jasmine
+after_success:
+  - npm run coveralls
+sudo: false
+
