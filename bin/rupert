@@ -19,15 +19,11 @@ let argv = require('yargs')
     .argv,
 
     // Default to logging to stdout.
-    printer = require(`../lib/printer/${!argv.html ? 'log' : 'html'}`),
-    makeTree = require('../lib/makeTree'),
+    printer = require(`../src/lib/printer/${!argv.html ? 'log' : 'html'}`),
+    makeTree = require('../src/index'),
     file = argv.file;
 
-
-if (!file) {
-    console.log('[ERROR] No file specified');
-    return;
-}
-
-makeTree(file, printer);
+makeTree(file, printer)
+.then(console.log)
+.catch(console.log);
 

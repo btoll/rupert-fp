@@ -80,7 +80,7 @@
         return [
             `for (${this.getNodeValue(node.left)} ${type} ${this.getNodeValue(node.right)}) {`,
             this.getNodeValue(node.body),
-            `}`
+            '}'
         ].join('');
     }
 
@@ -128,6 +128,18 @@
                         results.push(expression);
                     }
                 }
+//            } else if (type === 'ReturnStatement') {
+//                let argument = node.argument,
+//                    type = argument.type;
+//
+//                if (type === 'CallExpression') {
+//                    let firstArg = argument.arguments[0];
+//
+// //                    if (firstArg && isFunctionExpressionType(firstArg.type) && checkExpression(firstArg)) {
+//                    if (firstArg) {
+//                        results.push(node);
+//                    }
+//                }
             } else if (type === 'ForInStatement') {
                 results.push(node);
             } else if (type === 'ForOfStatement') {
@@ -370,7 +382,7 @@
                             '' :
                             this.getPrinter().prettyPrint(`${this.getNodeValue(prop.key)}: ${this.getNodeValue(prop.value)}`);
                     }).join(`,${!inBlock ? '' : '</span>'} `),
-                    //this.getPrinter().prettyPrint('}')
+                    // this.getPrinter().prettyPrint('}')
                     `${!inBlock ? '' : '</span>'}}`
                 ].join('');
         },
@@ -412,10 +424,12 @@
             return res.concat(this.getNodeValue(expressions.slice(1)));
         },
 
+        /*
         getTemplateLiteral: function (node) {
             // TODO
             return '`TODO: parse template strings`';
         },
+        */
 
         getUnaryExpression: (() => {
             let needsPadding = new Set(['delete', 'instanceof', 'typeof']);
