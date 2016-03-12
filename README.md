@@ -1,10 +1,12 @@
-### The Big Idea
+# Rupert
 
-### Installation
+[![Build Status](https://travis-ci.org/btoll/rupert.svg?branch=master)](https://travis-ci.org/btoll/rupert)
+
+## Installation
 
 `npm install https://github.com/btoll/rupert.git -g`
 
-### Example
+## Example
 
 Dump the tree to `stdout`:
 
@@ -22,7 +24,7 @@ Pipe:
 
     rupert -f Filters.js | tee foo
 
-### Usage
+## Usage
 
     Property | Description
     ------------ | -------------
@@ -30,7 +32,13 @@ Pipe:
     --html | Creates an html document of the tree
     -h, --help | Show help
 
-Weeeeeeeeeeeeeeeeeeeeeeeeee!!!!!!!!!!!!!!
+## License
+
+[MIT](LICENSE)
+
+## Author
+
+Benjamin Toll
 
 [Esprima]: http://esprima.org/
 
