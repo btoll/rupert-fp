@@ -38,9 +38,8 @@
             let contents = visitTree(suite);
 
             if (!contents.length) {
-                return `Rupert: No results found for suite ${file}`;
+                return `Rupert: No results found for file ${file}`;
             } else {
-                visitor.setPrinter(printer);
                 return printer.print(contents);
             }
         });

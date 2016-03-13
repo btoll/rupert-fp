@@ -1,10 +1,10 @@
 (() => {
     'use strict';
 
-    let inBlock = false,
-        forInStatementTypes = new Set(['ForInStatement', 'ForOfStatement', 'ForStatement']),
+    let // inBlock = false,
+//        forInStatementTypes = new Set(['ForInStatement', 'ForOfStatement', 'ForStatement']),
         functionExpressionTypes = new Set(['ArrowFunctionExpression', 'FunctionExpression']),
-        indent = 0,
+//        indent = 0,
         visitor;
 
     function argMatch(outer, inner) {
@@ -70,9 +70,11 @@
         return arr.concat(getArrayElements.call(this, elements.slice(1)));
     }
 
+    /*
     function isForStatementType(type) {
         return forInStatementTypes.has(type);
     }
+    */
 
     function isFunctionExpressionType(type) {
         return functionExpressionTypes.has(type);
@@ -167,10 +169,7 @@
 
         getBlockStatement: function (node) {
             return node.body.map((node) => {
-                return this.getPrinter().prettyPrint([
-                    this.getNodeValue(node),
-                    !isForStatementType(node.type) ? ';</span>\n' : ''
-                ].join(''));
+                return this.getNodeValue(node);
             }).join('');
         },
 
@@ -202,7 +201,7 @@
             return [
                 `for (${this.getNodeValue(node.init)}; ${this.getNodeValue(node.test)}; ${this.getNodeValue(node.update)}) {`,
                 this.getNodeValue(node.body),
-                `</span>\n}`
+                '}'
             ].join('');
         },
 
@@ -270,11 +269,11 @@
                     break;
 
                 case 'BlockStatement':
-                    inBlock = true;
-                    indent++;
+//                    inBlock = true;
+//                    indent++;
                     value = this.getBlockStatement(node);
-                    indent--;
-                    inBlock = false;
+//                    indent--;
+//                    inBlock = false;
                     break;
 
                 case 'CallExpression':
@@ -367,15 +366,12 @@
 
             return !props.length ?
                 '{}' :
-
-                ['{',
-                    props.map((prop) => {
-                        return !inBlock ?
-                            '' :
-                            this.getPrinter().prettyPrint(`${this.getNodeValue(prop.key)}: ${this.getNodeValue(prop.value)}`);
-                    }).join(`,${!inBlock ? '' : '</span>'} `),
-                    // this.getPrinter().prettyPrint('}')
-                    `${!inBlock ? '' : '</span>'}}`
+                [
+                    '{',
+                    props.map(prop => {
+                        return `${this.getNodeValue(prop.key)}: ${this.getNodeValue(prop.value)}`;
+                    }),
+                    '}'
                 ].join('');
         },
 
@@ -470,7 +466,7 @@
             return [
                 `while (${this.getNodeValue(node.test)}) {`,
                 `${this.getNodeValue(node.body)}`,
-                `</span>\n}`
+                '}'
             ].join('');
         },
 

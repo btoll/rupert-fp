@@ -1,7 +1,7 @@
 {
   "name": "rupert",
   "version": "0.1.0",
-  "description": "Static analysis of functional pattern optimization in JavaScript",
+  "description": "Static analysis of functional patterns in JavaScript",
   "bin": {
     "rupert": "./bin/rupert"
   },
@@ -36,6 +36,7 @@
   "homepage": "https://github.com/btoll/rupert#readme",
   "dependencies": {
     "esprima": "^2.7.0",
+    "js-beautify": "^1.6.2",
     "yargs": "^3.30.0"
   },
   "devDependencies": {
@@ -47,3 +48,4 @@
     "jasmine-core": "^2.4.1"
   }
 }
+
