@@ -22,7 +22,8 @@
 
     function checkBody(body) {
         let res = true,
-            expression = body.expression,
+            // TODO: ReturnStatement will be body.argument!
+            expression = body.expression || body.argument,
             args = expression && expression.arguments;
 
         if (expression && expression.type !== 'CallExpression') {
@@ -46,8 +47,11 @@
             res = false;
 
         if (checkBody(firstBody)) {
-            if (body.length === 1 && firstBody.expression) {
-                res = argMatch(wrappingNode.params, firstBody.expression.arguments);
+            // TODO: ReturnStatement will be firstBody.argument!
+            let f = firstBody.expression || firstBody.argument;
+
+            if (body.length === 1 && f) {
+                res = argMatch(wrappingNode.params, f.arguments);
             }
         }
 
@@ -128,18 +132,6 @@
                         results.push(expression);
                     }
                 }
-//            } else if (type === 'ReturnStatement') {
-//                let argument = node.argument,
-//                    type = argument.type;
-//
-//                if (type === 'CallExpression') {
-//                    let firstArg = argument.arguments[0];
-//
-// //                    if (firstArg && isFunctionExpressionType(firstArg.type) && checkExpression(firstArg)) {
-//                    if (firstArg) {
-//                        results.push(node);
-//                    }
-//                }
             } else if (type === 'ForInStatement') {
                 results.push(node);
             } else if (type === 'ForOfStatement') {
