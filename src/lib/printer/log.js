@@ -17,7 +17,8 @@
                         loc = entry.loc;
 
                     rows.push(
-                        `\n// Type ${entry.type}, Lines ${loc.start.line} - ${loc.end.line}:\n\n${visitor.getNodeValue(entry)}`
+                        `\n// Type ${entry.type}, Lines ${loc.start.line} - ${loc.end.line}:`,
+                        `\n${visitor.getNodeValue(entry)}`
                     );
                 }
 

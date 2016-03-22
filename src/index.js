@@ -3,6 +3,7 @@
     'use strict';
 
     let esprima = require('esprima'),
+        chalk = require('chalk'),
         visitor = require('./lib/visitor'),
         fs = require('fs');
 
@@ -13,7 +14,7 @@
             } else {
                 fs.readFile(file, 'utf8', (err, fileContents) => {
                     if (err) {
-                        reject('[ERROR] There was a problem processing the file');
+                        reject(`${chalk.red('[ERROR]')} There was a problem processing the file.`);
                     } else {
                         resolve(fileContents);
                     }
@@ -37,11 +38,9 @@
         .then(suite => {
             let contents = visitTree(suite);
 
-            if (!contents.length) {
-                return `Rupert: No results found for file ${file}`;
-            } else {
-                return printer.print(contents);
-            }
+            return !contents.length ?
+                `${chalk.yellow('[INFO]')} No results found for file ${file}` :
+                printer.print(contents);
         });
     }
 

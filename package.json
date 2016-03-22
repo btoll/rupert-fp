@@ -35,6 +35,7 @@
   },
   "homepage": "https://github.com/btoll/rupert#readme",
   "dependencies": {
+    "chalk": "^1.1.1",
     "esprima": "^2.7.0",
     "js-beautify": "^1.6.2",
     "yargs": "^3.30.0"
