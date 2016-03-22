@@ -1,18 +1,20 @@
-#!/usr/bin/env node --harmony
+#!/usr/bin/env node
 /* eslint-disable no-console */
-
 'use strict';
 
 let argv = require('yargs')
     .usage('Usage: rupert [options]')
 
-    .demand('f')
     .alias('f', 'file')
     .nargs('f', 1)
     .describe('f', 'The file to analyze')
 
     .describe('html', 'Creates an html document of the tree')
     .boolean('html')
+
+    .alias('v', 'verbose')
+    .boolean('v')
+    .describe('v', 'Dumps `it` blocks')
 
     .help('h')
     .alias('h', 'help')
@@ -21,9 +23,31 @@ let argv = require('yargs')
     // Default to logging to stdout.
     printer = require(`../src/lib/printer/${!argv.html ? 'log' : 'html'}`),
     makeTree = require('../src/index'),
-    file = argv.file;
+    file = argv.file,
+    log = console.log;
 
-makeTree(file, printer)
-.then(console.log)
-.catch(console.log);
+if (!file) {
+    let stdin = process.stdin,
+        buf = '';
+
+    stdin.setEncoding('utf8');
+
+    stdin.on('readable', () => {
+        let chunk = stdin.read();
+
+        if (chunk !== null) {
+            buf += chunk;
+        }
+    });
+
+    stdin.on('end', () => {
+        makeTree(buf, printer, true)
+        .then(log)
+        .catch(log);
+    });
+} else {
+    makeTree(file, printer, argv.verbose, false)
+    .then(log)
+    .catch(log);
+}
 

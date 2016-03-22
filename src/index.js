@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
+'use strict';
+
 (() => {
-    'use strict';
 
     let esprima = require('esprima'),
         chalk = require('chalk'),
@@ -32,7 +33,7 @@
             throw new Error('Rupert: No printer given');
         }
 
-        console.log('Just a moment while we analyze the file...');
+//        console.log('Just a moment while we analyze the file...');
 
         return getSuite(file, isData)
         .then(suite => {

@@ -1,10 +1,8 @@
-(() => {
-    'use strict';
+'use strict';
 
-    let // inBlock = false,
-//        forInStatementTypes = new Set(['ForInStatement', 'ForOfStatement', 'ForStatement']),
+(() => {
+    let //        forInStatementTypes = new Set(['ForInStatement', 'ForOfStatement', 'ForStatement']),
         functionExpressionTypes = new Set(['ArrowFunctionExpression', 'FunctionExpression']),
-//        indent = 0,
         visitor;
 
     function argMatch(outer, inner) {
@@ -99,24 +97,15 @@
     }
 
     function parseArguments(args) {
-        // We're always parsing arguments from a MemberExpression here so it's necessary
-        // to enclose them in parens.
-        let parsed = args.map((arg) => {
-                return this.getNodeValue(arg);
-            }).join(', '),
-            arr = [parsed];
+        let params = args.reduce((acc, curr) => {
+                acc.push(this.getNodeValue(curr));
 
-        if (args.length) {
-            if (!isFunctionExpressionType(args[0].type)) {
-                arr.unshift('(');
-            }
-        } else {
-            arr.unshift('(');
-        }
+                return acc;
+            }, []);
 
-        arr.push(')');
 
-        return arr.join('');
+        // Return (foo, bar, quux)
+        return `(${params.join(', ')})`;
     }
 
     visitor = {
@@ -140,6 +129,20 @@
                 results.push(node);
             } else if (type === 'ForStatement') {
                 results.push(node);
+            } else if (type === 'VariableDeclaration') {
+                let n = node.declarations[0],
+                    init = n.init;
+
+                if (init && init.type === 'FunctionExpression') {
+                    let /* p1 = init.params.length,*/
+                        p2 = init.body.body[0];
+
+                    if (p2.type === 'ExpressionStatement') {
+//                        if (p2.expression.arguments.length === p1) {
+                            results.push(node);
+//                        }
+                    }
+                }
             } else if (type === 'WhileStatement') {
                 results.push(node);
             }
@@ -196,8 +199,7 @@
         },
 
         getForStatement: function (node) {
-            // Return a joined array instead of just a tmplate string for
-            // better control over formatting.
+            // Return a joined array instead of just a tmplate string for better control over formatting.
             return [
                 `for (${this.getNodeValue(node.init)}; ${this.getNodeValue(node.test)}; ${this.getNodeValue(node.update)}) {`,
                 this.getNodeValue(node.body),
@@ -208,8 +210,9 @@
         getFunctionExpression: function (node, isArrowFunction) {
             let value = [];
 
+            // Note if not arrow function make sure to wrap params in parens.
             value.push(
-                `(${!isArrowFunction ? 'function ' : ''}`,
+                `${!isArrowFunction ? 'function ' : ''}`,
                 this.getParams(node.params),
                 `${!isArrowFunction ? '' : ' => '} {`,
                 this.getNodeValue(node.body),
@@ -269,11 +272,7 @@
                     break;
 
                 case 'BlockStatement':
-//                    inBlock = true;
-//                    indent++;
                     value = this.getBlockStatement(node);
-//                    indent--;
-//                    inBlock = false;
                     break;
 
                 case 'CallExpression':
@@ -484,9 +483,9 @@
             return function (object, results) {
                 this.collect(object, results);
 
-                for (let n in object) {
-                    if (!blacklist.has(n) && object.hasOwnProperty(n)) {
-                        let obj = object[n];
+                for (let key of Object.keys(object)) {
+                    if (!blacklist.has(key)) {
+                        let obj = object[key];
 
                         if (typeof obj === 'object' && obj !== null) {
                             this.visit(obj, results);
