@@ -165,7 +165,7 @@
         getBinaryExpression: node => makeOperatorExpression(node).join(' '),
 
         getBlockStatement: function (node) {
-            return node.body.map(node => this.getNodeValue(node)).join('');
+            return node.body.map(node => `${this.getNodeValue(node)} ;`).join('');
         },
 
         getCallExpression: function (node) {
