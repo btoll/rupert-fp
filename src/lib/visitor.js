@@ -9,13 +9,8 @@
         // 1. Create a new flat array to test the inner nodes against.
         // 2. Check if ANY (some) node.name in the inner array matches
         //    one in the new array of outer array's node names.
-        return outer.map((node) => {
-            return node.name;
-        }).every((name) => {
-            return inner.some((node) => {
-                return name === node.name;
-            });
-        });
+        return outer.map(node => node.name)
+        .every(name => inner.some(node => name === node.name));
     }
 
     function checkBody(body) {
@@ -31,9 +26,7 @@
         if (expression && args && args.length) {
             let args = expression.arguments;
 
-            res = args.every((node) => {
-                return node.type === 'Identifier';
-            });
+            res = args.every(node => node.type === 'Identifier');
         }
 
         return res;
@@ -160,20 +153,16 @@
             return this.getFunctionExpression(node, true);
         },
 
-        getAssignmentExpression: (node) => {
+        getAssignmentExpression: node => {
             return [
                 makeOperatorExpression(node).join(' ')
             ].join('');
         },
 
-        getBinaryExpression: (node) => {
-            return makeOperatorExpression(node).join(' ');
-        },
+        getBinaryExpression: node => makeOperatorExpression(node).join(' '),
 
         getBlockStatement: function (node) {
-            return node.body.map((node) => {
-                return this.getNodeValue(node);
-            }).join('');
+            return node.body.map(node => this.getNodeValue(node)).join('');
         },
 
         getCallExpression: function (node) {
@@ -222,17 +211,11 @@
             return value.join('');
         },
 
-        getIdentifier: (node) => {
-            return node.name;
-        },
+        getIdentifier: node => node.name,
 
-        getLiteral: (node) => {
-            return node.raw;
-        },
+        getLiteral: node => node.raw,
 
-        getLogicalExpression: (node) => {
-            return makeOperatorExpression(node).join(' ');
-        },
+        getLogicalExpression: node => makeOperatorExpression(node).join(' '),
 
         getMemberExpression: function (node) {
             let nestedObj = node.object;
@@ -374,14 +357,12 @@
                 ].join('');
         },
 
-        getParams: (params) => {
+        getParams: params => {
             let p = [];
 
             p.push(
                 '(',
-                params.map((arg) => {
-                    return arg.name;
-                }).join(', '),
+                params.map(arg => arg.name).join(', '),
                 ')'
             );
 
