@@ -1,9 +1,9 @@
 'use strict';
 
 (() => {
-    let //        forInStatementTypes = new Set(['ForInStatement', 'ForOfStatement', 'ForStatement']),
-        functionExpressionTypes = new Set(['ArrowFunctionExpression', 'FunctionExpression']),
-        visitor;
+    //        forInStatementTypes = new Set(['ForInStatement', 'ForOfStatement', 'ForStatement']),
+    const functionExpressionTypes = new Set(['ArrowFunctionExpression', 'FunctionExpression']);
+    let visitor;
 
     function argMatch(outer, inner) {
         // 1. Create a new flat array to test the inner nodes against.
@@ -24,7 +24,7 @@
         }
 
         if (expression && args && args.length) {
-            let args = expression.arguments;
+            const args = expression.arguments;
 
             res = args.every(node => node.type === 'Identifier');
         }
@@ -33,15 +33,18 @@
     }
 
     function checkExpression(wrappingNode) {
-        let body = wrappingNode.body.body,
-            firstBody = body[0],
-            res = false;
+        const body = wrappingNode.body.body,
+            firstBody = body[0];
+
+        let res = false;
 
         if (checkBody(firstBody)) {
             // TODO: ReturnStatement will be firstBody.argument!
-            let f = firstBody.expression || firstBody.argument;
+            const f = firstBody.expression || firstBody.argument;
 
+            // TODO:
             if (body.length === 1 && f) {
+//            if (body.length > 1 && f) {
                 res = argMatch(wrappingNode.params, f.arguments);
             }
         }
@@ -50,7 +53,7 @@
     }
 
     function getArrayElements(elements) {
-        let arr = [];
+        const arr = [];
 
         if (!elements.length) {
             return arr;
@@ -90,7 +93,7 @@
     }
 
     function parseArguments(args) {
-        let params = args.reduce((acc, curr) => {
+        const params = args.reduce((acc, curr) => {
                 acc.push(this.getNodeValue(curr));
 
                 return acc;
@@ -103,14 +106,14 @@
 
     visitor = {
         collect: (node, results) => {
-            let expression = node.expression,
+            const expression = node.expression,
                 type = node.type;
 
             if (type === 'ExpressionStatement') {
-                let type = expression.type;
+                const type = expression.type;
 
                 if (type === 'CallExpression') {
-                    let firstArg = expression.arguments[0];
+                    const firstArg = expression.arguments[0];
 
                     if (firstArg && isFunctionExpressionType(firstArg.type) && checkExpression(firstArg)) {
                         results.push(expression);
@@ -123,11 +126,11 @@
             } else if (type === 'ForStatement') {
                 results.push(node);
             } else if (type === 'VariableDeclaration') {
-                let n = node.declarations[0],
+                const n = node.declarations[0],
                     init = n.init;
 
                 if (init && init.type === 'FunctionExpression') {
-                    let /* p1 = init.params.length,*/
+                    const /* p1 = init.params.length,*/
                         p2 = init.body.body[0];
 
                     if (p2.type === 'ExpressionStatement') {
@@ -197,7 +200,7 @@
         },
 
         getFunctionExpression: function (node, isArrowFunction) {
-            let value = [];
+            const value = [];
 
             // Note if not arrow function make sure to wrap params in parens.
             value.push(
@@ -218,7 +221,7 @@
         getLogicalExpression: node => makeOperatorExpression(node).join(' '),
 
         getMemberExpression: function (node) {
-            let nestedObj = node.object;
+            const nestedObj = node.object;
 
             while (nestedObj) {
                 return this.getNodeValue(nestedObj) + this.getProperty(node);
@@ -344,7 +347,7 @@
         },
 
         getObjectExpression: function (node) {
-            let props = node.properties;
+            const props = node.properties;
 
             return !props.length ?
                 '{}' :
@@ -358,7 +361,7 @@
         },
 
         getParams: params => {
-            let p = [];
+            const p = [];
 
             p.push(
                 '(',
@@ -370,7 +373,7 @@
         },
 
         getProperty: function (node) {
-            let computed = node.computed;
+            const computed = node.computed;
 
             return `${(computed ? '[' : '.')}${this.getNodeValue(node.property)}${(computed ? ']' : '')}`;
         },
@@ -380,7 +383,7 @@
         },
 
         getSequenceExpression: function (node) {
-            let expressions = node.expressions,
+            const expressions = node.expressions,
                 res = [];
 
             if (!expressions.length) {
@@ -400,12 +403,12 @@
         */
 
         getUnaryExpression: (() => {
-            let needsPadding = new Set(['delete', 'instanceof', 'typeof']);
+            const needsPadding = new Set(['delete', 'instanceof', 'typeof']);
 
             return function (node) {
-                let arg = node.argument,
-                    // Pad the operator in cases where it's `delete`, `typeof`, etc.
-                    operator = node.operator;
+                const arg = node.argument;
+                // Pad the operator in cases where it's `delete`, `typeof`, etc.
+                let operator = node.operator;
 
                 if (needsPadding.has(operator)) {
                     operator = ` ${operator} `;
@@ -427,8 +430,8 @@
 
         getVariableDeclarator: function (nodes) {
             return nodes.reduce((acc, curr) => {
-                let init = curr.init,
-                    tpl = `${this.getNodeValue(curr.id)}`;
+                const init = curr.init;
+                let tpl = `${this.getNodeValue(curr.id)}`;
 
                 if (init) {
                     tpl += ` = ${this.getNodeValue(init)}`;
@@ -459,14 +462,14 @@
         },
 
         visit: (() => {
-            let blacklist = new Set(['comments', 'loc']);
+            const blacklist = new Set(['comments', 'loc']);
 
             return function (object, results) {
                 this.collect(object, results);
 
-                for (let key of Object.keys(object)) {
+                for (const key of Object.keys(object)) {
                     if (!blacklist.has(key)) {
-                        let obj = object[key];
+                        const obj = object[key];
 
                         if (typeof obj === 'object' && obj !== null) {
                             this.visit(obj, results);

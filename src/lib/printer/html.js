@@ -1,12 +1,12 @@
-(() => {
-    'use strict';
+'use strict';
 
-    let visitor = require('../visitor');
+(() => {
+    const visitor = require('../visitor');
 
     module.exports = Object.setPrototypeOf({
         init: function (results, file) {
             return new Promise((resolve, reject) => {
-                let tpl = this.makeTpl(file, this.print(results, []));
+                const tpl = this.makeTpl(file, this.print(results, []));
 
                 require('fs').writeFile(`${require('path').basename(file)}_.html`, tpl, 'utf8', (err) => {
                     if (err) {
@@ -68,8 +68,8 @@
         },
 
         print: function (results, buf) {
-            for (let entry of results) {
-                let loc = entry.loc;
+            for (const entry of results) {
+                const loc = entry.loc;
 
                 buf.push(
                    `<p class="lines">Type <span>${entry.type}</span>, Lines ${loc.start.line} - ${loc.end.line}</p>

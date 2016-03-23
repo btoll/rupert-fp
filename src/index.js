@@ -2,8 +2,7 @@
 'use strict';
 
 (() => {
-
-    let esprima = require('esprima'),
+    const esprima = require('esprima'),
         chalk = require('chalk'),
         visitor = require('./lib/visitor'),
         fs = require('fs');
@@ -37,10 +36,11 @@
 
         return getSuite(file, isData)
         .then(suite => {
-            let contents = visitTree(suite);
+            const contents = visitTree(suite);
 
             return !contents.length ?
-                `${chalk.yellow('[INFO]')} No results found for file ${file}` :
+//                `${chalk.yellow('[INFO]')} No results found for file ${file}` :
+                `${chalk.yellow('[INFO]')} No results found` :
                 printer.print(contents);
         });
     }

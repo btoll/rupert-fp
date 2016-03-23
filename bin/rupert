@@ -2,7 +2,7 @@
 /* eslint-disable no-console */
 'use strict';
 
-let argv = require('yargs')
+const argv = require('yargs')
     .usage('Usage: rupert [options]')
 
     .alias('f', 'file')
@@ -27,13 +27,13 @@ let argv = require('yargs')
     log = console.log;
 
 if (!file) {
-    let stdin = process.stdin,
-        buf = '';
+    const stdin = process.stdin;
+    let buf = '';
 
     stdin.setEncoding('utf8');
 
     stdin.on('readable', () => {
-        let chunk = stdin.read();
+        const chunk = stdin.read();
 
         if (chunk !== null) {
             buf += chunk;
