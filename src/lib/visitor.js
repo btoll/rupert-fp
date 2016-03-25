@@ -220,6 +220,12 @@
 
         getIdentifier: node => node.name,
 
+        getIfStatement: function (node) {
+            return `if (${this.getNodeValue(node.test)}) {
+                ${this.getNodeValue(node.consequent)}
+            }`;
+        },
+
         getLiteral: node => node.raw,
 
         getLogicalExpression: node => makeOperatorExpression(node).join(' '),
@@ -295,6 +301,10 @@
 
                 case 'Identifier':
                     value = this.getIdentifier(node);
+                    break;
+
+                case 'IfStatement':
+                    value = this.getIfStatement(node);
                     break;
 
                 case 'Literal':
