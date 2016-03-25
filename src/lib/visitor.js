@@ -399,12 +399,10 @@
             return res.concat(this.getNodeValue(expressions.slice(1)));
         },
 
-        /*
-        getTemplateLiteral: function (node) {
+        getTemplateLiteral: function () {
             // TODO
             return '`TODO: parse template strings`';
         },
-        */
 
         getUnaryExpression: (() => {
             const needsPadding = new Set(['delete', 'instanceof', 'typeof']);
@@ -455,14 +453,6 @@
                 `${this.getNodeValue(node.body)}`,
                 '}'
             ].join('');
-        },
-
-        getPrinter: function () {
-            return this.printer;
-        },
-
-        setPrinter: function (printer) {
-            this.printer = printer;
         },
 
         visit: (() => {
