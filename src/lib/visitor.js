@@ -33,12 +33,9 @@
     }
 
     function checkExpression(wrappingNode) {
-        const bodies = wrappingNode.body.body;
         let res = false;
 
-        for (let i = 0, len = bodies.length; i < len; i++) {
-            const body = bodies[i];
-
+        wrappingNode.body.body.forEach(body => {
     //        if (checkBody(body)) {
     //            // TODO: ReturnStatement will be firstBody.argument!
     //            let f = body.expression || body.argument;
@@ -48,9 +45,8 @@
     //                res = argMatch(wrappingNode.params, f.arguments);
     //            }
     //        }
-
             res = checkBody(body);
-        }
+        });
 
         return res;
     }
