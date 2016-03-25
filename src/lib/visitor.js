@@ -1,17 +1,17 @@
 'use strict';
 
 (() => {
-    //        forInStatementTypes = new Set(['ForInStatement', 'ForOfStatement', 'ForStatement']),
+    // let forInStatementTypes = new Set(['ForInStatement', 'ForOfStatement', 'ForStatement']),
     const functionExpressionTypes = new Set(['ArrowFunctionExpression', 'FunctionExpression']);
     let visitor;
 
-    function argMatch(outer, inner) {
-        // 1. Create a new flat array to test the inner nodes against.
-        // 2. Check if ANY (some) node.name in the inner array matches
-        //    one in the new array of outer array's node names.
-        return outer.map(node => node.name)
-        .every(name => inner.some(node => name === node.name));
-    }
+//    function argMatch(outer, inner) {
+//        // 1. Create a new flat array to test the inner nodes against.
+//        // 2. Check if ANY (some) node.name in the inner array matches
+//        //    one in the new array of outer array's node names.
+//        return outer.map(node => node.name)
+//        .every(name => inner.some(node => name === node.name));
+//    }
 
     function checkBody(body) {
         let res = true,
@@ -33,20 +33,23 @@
     }
 
     function checkExpression(wrappingNode) {
-        const body = wrappingNode.body.body,
-            firstBody = body[0];
-
+        const bodies = wrappingNode.body.body;
         let res = false;
 
-        if (checkBody(firstBody)) {
-            // TODO: ReturnStatement will be firstBody.argument!
-            const f = firstBody.expression || firstBody.argument;
+        for (let i = 0, len = bodies.length; i < len; i++) {
+            const body = bodies[i];
 
-            // TODO:
-            if (body.length === 1 && f) {
-//            if (body.length > 1 && f) {
-                res = argMatch(wrappingNode.params, f.arguments);
-            }
+    //        if (checkBody(body)) {
+    //            // TODO: ReturnStatement will be firstBody.argument!
+    //            let f = body.expression || body.argument;
+    //
+    //    //        if (body.length === 1 && f) {
+    //            if (bodies.length > 0 && f) {
+    //                res = argMatch(wrappingNode.params, f.arguments);
+    //            }
+    //        }
+
+            res = checkBody(body);
         }
 
         return res;
@@ -106,11 +109,11 @@
 
     visitor = {
         collect: (node, results) => {
-            const expression = node.expression,
-                type = node.type;
+            const type = node.type;
 
             if (type === 'ExpressionStatement') {
-                const type = expression.type;
+                const expression = node.expression,
+                    type = expression.type;
 
                 if (type === 'CallExpression') {
                     const firstArg = expression.arguments[0];
@@ -129,14 +132,15 @@
                 const n = node.declarations[0],
                     init = n.init;
 
-                if (init && init.type === 'FunctionExpression') {
-                    const /* p1 = init.params.length,*/
-                        p2 = init.body.body[0];
+                if (init && isFunctionExpressionType(init.type)) {
+                    let n = init.body.body[0];
 
-                    if (p2.type === 'ExpressionStatement') {
-//                        if (p2.expression.arguments.length === p1) {
+                    if (n.type === 'ExpressionStatement') {
+                        results.push(node);
+                    } else if (n.type === 'ReturnStatement') {
+                        if (isFunctionExpressionType(n.argument.type)) {
                             results.push(node);
-//                        }
+                        }
                     }
                 }
             } else if (type === 'WhileStatement') {
