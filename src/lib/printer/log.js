@@ -2,8 +2,9 @@
 'use strict';
 
 (() => {
-    const visitor = require('../visitor'),
-        jsBeautify = require('js-beautify').js_beautify;
+    const chalk = require('chalk'),
+        jsBeautify = require('js-beautify').js_beautify,
+        visitor = require('../visitor');
 
     module.exports = {
         print: function (results) {
@@ -16,12 +17,12 @@
                         loc = entry.loc;
 
                     rows.push(
-                        `\n// Type ${entry.type}, Lines ${loc.start.line} - ${loc.end.line}:`,
-                        `\n${visitor.getNodeValue(entry)}`
+                        `\n${chalk.bgWhite.blue(`// Type ${chalk.bold(entry.type)}, Lines ${loc.start.line} - ${loc.end.line}:`)}`,
+                        `\n${jsBeautify(visitor.getNodeValue(entry))}`
                     );
                 }
 
-                resolve(jsBeautify(rows.join('\n')));
+                resolve(rows.join('\n'));
             });
         }
     };
