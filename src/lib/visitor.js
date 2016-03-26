@@ -19,7 +19,7 @@
             expression = body.expression || body.argument,
             args = expression && expression.arguments;
 
-        if (expression && expression.type !== 'CallExpression') {
+        if (expression && ['ArrowFunctionExpression', 'CallExpression'].indexOf(expression.type) === -1) {
             return false;
         }
 
@@ -34,19 +34,27 @@
 
     function checkExpression(wrappingNode) {
         let res = false;
+        const wrappingNodeBody = wrappingNode.body,
+            wrappingType = wrappingNodeBody.type;
 
-        wrappingNode.body.body.forEach(body => {
-    //        if (checkBody(body)) {
-    //            // TODO: ReturnStatement will be firstBody.argument!
-    //            let f = body.expression || body.argument;
-    //
-    //    //        if (body.length === 1 && f) {
-    //            if (bodies.length > 0 && f) {
-    //                res = argMatch(wrappingNode.params, f.arguments);
-    //            }
-    //        }
-            res = checkBody(body);
-        });
+        if (wrappingType === 'BlockStatement') {
+            const bodies = wrappingNodeBody.body;
+
+            Array.isArray(bodies) && bodies.forEach(body => {
+        //        if (checkBody(body)) {
+        //            // TODO: ReturnStatement will be firstBody.argument!
+        //            let f = body.expression || body.argument;
+        //
+        //    //        if (body.length === 1 && f) {
+        //            if (bodies.length > 0 && f) {
+        //                res = argMatch(wrappingNode.params, f.arguments);
+        //            }
+        //        }
+                res = checkBody(body);
+            });
+        } else if (wrappingType === 'ArrowFunctionExpression') {
+            res = true;
+        }
 
         return res;
     }
