@@ -26,7 +26,7 @@
         if (expression && args && args.length) {
             const args = expression.arguments;
 
-            res = args.every(node => node.type === 'Identifier');
+            res = args.every(node => ['Identifier', 'Literal', 'TemplateLiteral'].indexOf(node.type) > -1);
         }
 
         return res;
@@ -113,16 +113,20 @@
 
     visitor = {
         collect: (node, results) => {
-            const type = node.type;
+            let type = node.type;
 
             if (type === 'ExpressionStatement') {
-                const expression = node.expression,
+                let expression = node.expression,
                     type = expression.type;
 
                 if (type === 'CallExpression') {
-                    const firstArg = expression.arguments[0];
+                    let firstArg = expression.arguments[0];
 
                     if (firstArg && isFunctionExpressionType(firstArg.type) && checkExpression(firstArg)) {
+                        results.push(expression);
+                    }
+                } else if (type === 'ArrowFunctionExpression') {
+                    if (checkExpression(expression)) {
                         results.push(expression);
                     }
                 }
@@ -136,13 +140,17 @@
                 const n = node.declarations[0],
                     init = n.init;
 
-                if (init && isFunctionExpressionType(init.type)) {
-                    let n = init.body.body[0];
+                if (init) {
+                    let initType = init.type;
 
-                    if (n.type === 'ExpressionStatement') {
-                        results.push(node);
-                    } else if (n.type === 'ReturnStatement') {
-                        if (isFunctionExpressionType(n.argument.type)) {
+                    if (initType === 'CallExpression') {
+                        let firstArg = init.arguments[0];
+
+                        if (firstArg && isFunctionExpressionType(firstArg.type) && checkExpression(firstArg)) {
+                            results.push(node);
+                        }
+                    } else if (isFunctionExpressionType(initType)) {
+                        if (checkExpression(init)) {
                             results.push(node);
                         }
                     }
