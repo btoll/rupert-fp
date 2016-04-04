@@ -1,9 +1,7 @@
-/* eslint-disable no-console */
 'use strict';
 
 (() => {
     const esprima = require('esprima'),
-        chalk = require('chalk'),
         visitor = require('./lib/visitor'),
         fs = require('fs');
 
@@ -14,7 +12,7 @@
             } else {
                 fs.readFile(file, 'utf8', (err, fileContents) => {
                     if (err) {
-                        reject(`${chalk.red('[ERROR]')} There was a problem processing the file.`);
+                        reject('There was a problem processing the file.');
                     } else {
                         resolve(fileContents);
                     }
@@ -32,15 +30,12 @@
             throw new Error('Rupert: No printer given');
         }
 
-//        console.log('Just a moment while we analyze the file...');
-
         return getSuite(file, isData)
         .then(suite => {
             const contents = visitTree(suite);
 
             return !contents.length ?
-//                `${chalk.yellow('[INFO]')} No results found for file ${file}` :
-                `${chalk.yellow('[INFO]')} No results found` :
+                'No results found' :
                 printer.print(contents);
         });
     }

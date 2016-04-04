@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-/* eslint-disable no-console */
 'use strict';
 
-const argv = require('yargs')
+const logger = require('logger'),
+    argv = require('yargs')
     .usage('Usage: rupert [options]')
 
     .alias('f', 'file')
@@ -24,7 +24,8 @@ const argv = require('yargs')
     printer = require(`../src/lib/printer/${!argv.html ? 'log' : 'html'}`),
     makeTree = require('../src/index'),
     file = argv.file,
-    log = console.log;
+    info = logger.info,
+    error = logger.error;
 
 if (!file) {
     const stdin = process.stdin;
@@ -42,12 +43,12 @@ if (!file) {
 
     stdin.on('end', () => {
         makeTree(buf, printer, true)
-        .then(log)
-        .catch(log);
+        .then(info)
+        .catch(error);
     });
 } else {
     makeTree(file, printer, argv.verbose, false)
-    .then(log)
-    .catch(log);
+    .then(info)
+    .catch(error);
 }
 

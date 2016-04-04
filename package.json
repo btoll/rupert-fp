@@ -38,6 +38,7 @@
     "chalk": "^1.1.1",
     "esprima": "^2.7.0",
     "js-beautify": "^1.6.2",
+    "logger": "git+https://github.com/btoll/logger.git",
     "yargs": "^3.30.0"
   },
   "devDependencies": {
