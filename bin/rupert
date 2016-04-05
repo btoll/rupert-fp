@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable no-console */
 'use strict';
 
 const logger = require('logger'),
@@ -21,10 +22,11 @@ const logger = require('logger'),
     .argv,
 
     // Default to logging to stdout.
-    printer = require(`../src/lib/printer/${!argv.html ? 'log' : 'html'}`),
+    generator = require(`../src/lib/generator/${!argv.html ? 'log' : 'html'}`),
     makeTree = require('../src/index'),
     file = argv.file,
-    info = logger.info,
+    // TODO
+    log = console.log,
     error = logger.error;
 
 if (!file) {
@@ -42,13 +44,13 @@ if (!file) {
     });
 
     stdin.on('end', () => {
-        makeTree(buf, printer, true)
-        .then(info)
+        makeTree(buf, generator, true)
+        .then(log)
         .catch(error);
     });
 } else {
-    makeTree(file, printer, argv.verbose, false)
-    .then(info)
+    makeTree(file, generator, argv.verbose, false)
+    .then(log)
     .catch(error);
 }
 

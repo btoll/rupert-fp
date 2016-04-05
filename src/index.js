@@ -21,13 +21,13 @@
         });
     }
 
-    function makeTree(file, printer, isData) {
+    function makeTree(file, generator, isData) {
         if (!file) {
             throw new Error('Rupert: No file given');
         }
 
-        if (!printer) {
-            throw new Error('Rupert: No printer given');
+        if (!generator) {
+            throw new Error('Rupert: No generator given');
         }
 
         return getSuite(file, isData)
@@ -36,7 +36,7 @@
 
             return !contents.length ?
                 'No results found' :
-                printer.print(contents);
+                generator.print(contents);
         });
     }
 
