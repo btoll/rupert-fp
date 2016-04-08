@@ -1,4 +1,3 @@
-/* eslint-disable no-case-declarations */
 'use strict';
 
 function getArrayElements(elements) {

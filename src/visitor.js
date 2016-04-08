@@ -1,4 +1,4 @@
-/* eslint-disable no-case-declarations, one-var */
+/* eslint-disable no-case-declarations,one-var */
 'use strict';
 
 module.exports = {

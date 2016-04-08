@@ -1,7 +1,7 @@
 'use strict';
 
 const esprima = require('esprima'),
-    visitor = require('./lib/visitor'),
+    visitor = require('./visitor'),
     fs = require('fs');
 
 function getSuite(file, isData) {

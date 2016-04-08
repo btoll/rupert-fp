@@ -22,7 +22,7 @@ const logger = require('logger'),
     .argv,
 
     // Default to logging to stdout.
-    generator = require(`../src/lib/generator/${!argv.html ? 'log' : 'html'}`),
+    generator = require(`../src/generator/${!argv.html ? 'log' : 'html'}`),
     makeTree = require('../src/index'),
     file = argv.file,
     // TODO
