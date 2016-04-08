@@ -9,9 +9,10 @@ module.exports = {
 
                 if (bodies) {
                     if (bodies.length === 1) {
-                        results.push(parent);
+//                        results.push(parent);
+                        results.push(node);
                     } else {
-                        bodies.forEach(body => this.visit(body, parent, results));
+                        bodies.forEach(node => this.visit(node, parent, results));
                     }
                 }
                 break;
@@ -25,7 +26,7 @@ module.exports = {
                 const callArgs = node.arguments;
 
                 if (callArgs.length) {
-                    callArgs.forEach(arg => this.visit(arg, node, results));
+                    callArgs.forEach(node => this.visit(node, node, results));
                 } else if (node.callee.type === 'ArrowFunctionExpression') {
                     this.visit(node.callee, node, results);
                 }
@@ -44,7 +45,7 @@ module.exports = {
 
             case 'FunctionExpression':
                 // TODO
-                node.body.body.forEach(body => this.visit(body, parent, results));
+                node.body.body.forEach(node => this.visit(node, parent, results));
                 break;
 
             case 'Program':
@@ -55,12 +56,18 @@ module.exports = {
                 const returnArgs = node.argument.arguments;
 
                 if (returnArgs) {
-                    returnArgs.forEach(arg => this.visit(arg, parent, results));
+                    returnArgs.forEach(node => this.visit(node, parent, results));
+                }
+                break;
+
+            case 'VariableDeclarator':
+                if (node.init) {
+                    this.visit(node.init, parent, results);
                 }
                 break;
 
             case 'VariableDeclaration':
-                this.visit(node.declarations[0].init, node, results);
+                node.declarations.forEach(node => this.visit(node, parent, results));
                 break;
         }
     }

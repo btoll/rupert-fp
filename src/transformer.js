@@ -25,36 +25,12 @@ function makeForExpression(node, type) {
     ].join('');
 }
 
-function makeOperatorExpression(node) {
-    return [
-        transformer.getNodeValue(node.left),
-        node.operator,
-        transformer.getNodeValue(node.right)
-    ];
-}
-
-function parseArguments(args) {
-    const params = args.reduce((acc, curr) => {
-            acc.push(this.getNodeValue(curr));
-
-            return acc;
-        }, []);
-
-
-    // Return (foo, bar, quux)
-    return `(${params.join(', ')})`;
-}
-
 const transformer = {
     getNodeValue: function (node) {
+        const nodeType = node.type;
         let value;
 
-        // Satisfy null cases.
-        if (!node) {
-            return '';
-        }
-
-        switch (node.type) {
+        switch (nodeType) {
             case 'ArrayExpression':
                 value = [
                     '[',
@@ -64,17 +40,27 @@ const transformer = {
                 break;
 
             case 'ArrowFunctionExpression':
-                value = this.getFunctionExpression(node, true);
-                break;
+            case 'FunctionExpression':
+                const isArrowFunction = nodeType === 'ArrowFunctionExpression';
 
-            case 'AssignmentExpression':
+                // Note if not arrow function make sure to wrap params in parens.
                 value = [
-                    makeOperatorExpression(node).join(' ')
+                    `${!isArrowFunction ? 'function ' : ''}`,
+                    this.getParams(node.params),
+                    `${!isArrowFunction ? '' : ' => '} {`,
+                    this.getNodeValue(node.body),
+                    '}'
                 ].join('');
                 break;
 
+            case 'AssignmentExpression':
             case 'BinaryExpression':
-                value = makeOperatorExpression(node).join(' ');
+            case 'LogicalExpression':
+                value = [
+                    transformer.getNodeValue(node.left),
+                    node.operator,
+                    transformer.getNodeValue(node.right)
+                ].join(' ');
                 break;
 
             case 'BlockStatement':
@@ -82,13 +68,31 @@ const transformer = {
                 break;
 
             case 'CallExpression':
-                value = this.getCallExpression(node);
+            case 'NewExpression':
+                const params = node.arguments.reduce((acc, curr) => {
+                        acc.push(this.getNodeValue(curr));
+
+                        return acc;
+                    }, []);
+
+                // Return (foo, bar, quux)
+                value = `${this.getNodeValue(node.callee)} (${params.join(', ')})`;
+
+                if (nodeType === 'NewExpression') {
+                    value = `new ${value}`;
+                }
                 break;
 
             case 'ConditionalExpression':
-                value = `(${this.getNodeValue(node.test)}) ?
-                    (${this.getNodeValue(node.consequent)}) :
-                    (${this.getNodeValue(node.alternate)})`;
+                value = [
+                    '(',
+                    this.getNodeValue(node.test),
+                    ' ? ',
+                    this.getNodeValue(node.consequent),
+                    ' : ',
+                    this.getNodeValue(node.alternate),
+                    ')'
+                ].join('');
                 break;
 
             case 'ExpressionStatement':
@@ -104,16 +108,12 @@ const transformer = {
                 break;
 
             case 'ForStatement':
-                // Return a joined array instead of just a tmplate string for better control over formatting.
+                // Return a joined array instead of just a template string for better control over formatting.
                 value = [
                     `for (${this.getNodeValue(node.init)}; ${this.getNodeValue(node.test)}; ${this.getNodeValue(node.update)}) {`,
                     this.getNodeValue(node.body),
                     '}'
                 ].join('');
-                break;
-
-            case 'FunctionExpression':
-                value = this.getFunctionExpression(node);
                 break;
 
             case 'Identifier':
@@ -130,10 +130,6 @@ const transformer = {
                 value = node.raw;
                 break;
 
-            case 'LogicalExpression':
-                value = makeOperatorExpression(node).join(' ');
-                break;
-
             case 'MemberExpression':
                 const nestedObj = node.object;
 
@@ -141,10 +137,6 @@ const transformer = {
 //                while (nestedObj) {
                     value = this.getNodeValue(nestedObj) + this.getProperty(node);
 //                }
-                break;
-
-            case 'NewExpression':
-                value = `new ${this.getCallExpression(node)}`;
                 break;
 
             case 'ObjectExpression':
@@ -207,11 +199,24 @@ const transformer = {
                 break;
 
             case 'VariableDeclaration':
-                value = `${node.kind} ${this.getVariableDeclarator(node.declarations)}`;
+                const declarations = node.declarations.reduce((acc, curr) => {
+                    const init = curr.init;
+                    let tpl = `${this.getNodeValue(curr.id)}`;
+
+                    if (init) {
+                        tpl += ` = ${this.getNodeValue(init)}`;
+                    }
+
+                    acc.push(tpl);
+
+                    return acc;
+                }, []).join(', ');
+
+                value = `${node.kind} ${declarations}`;
                 break;
 
             case 'WhileStatement':
-                // Return a joined array instead of just a tmplate string for
+                // Return a joined array instead of just a template string for
                 // better control over formatting.
                 value = [
                     `while (${this.getNodeValue(node.test)}) {`,
@@ -222,31 +227,6 @@ const transformer = {
         }
 
         return value;
-    },
-
-    getCallExpression: function (node) {
-        return this.getNodeValue(node.callee) + parseArguments.call(this, node.arguments);
-    },
-
-    getConditionalExpression: function (node) {
-        return `(${this.getNodeValue(node.test)}) ?
-            (${this.getNodeValue(node.consequent)}) :
-            (${this.getNodeValue(node.alternate)})`;
-    },
-
-    getFunctionExpression: function (node, isArrowFunction) {
-        const value = [];
-
-        // Note if not arrow function make sure to wrap params in parens.
-        value.push(
-            `${!isArrowFunction ? 'function ' : ''}`,
-            this.getParams(node.params),
-            `${!isArrowFunction ? '' : ' => '} {`,
-            this.getNodeValue(node.body),
-            '}'
-        );
-
-        return value.join('');
     },
 
     getParams: params => {
@@ -265,21 +245,6 @@ const transformer = {
         const computed = node.computed;
 
         return `${(computed ? '[' : '.')}${this.getNodeValue(node.property)}${(computed ? ']' : '')}`;
-    },
-
-    getVariableDeclarator: function (nodes) {
-        return nodes.reduce((acc, curr) => {
-            const init = curr.init;
-            let tpl = `${this.getNodeValue(curr.id)}`;
-
-            if (init) {
-                tpl += ` = ${this.getNodeValue(init)}`;
-            }
-
-            acc.push(tpl);
-
-            return acc;
-        }, []).join(', ');
     }
 };
 
