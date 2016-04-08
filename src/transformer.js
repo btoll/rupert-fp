@@ -1,4 +1,7 @@
+/* eslint-disable no-case-declarations,one-var */
 'use strict';
+
+const needsPadding = new Set(['delete', 'instanceof', 'typeof']);
 
 function getArrayElements(elements) {
     const arr = [];
@@ -53,23 +56,29 @@ const transformer = {
 
         switch (node.type) {
             case 'ArrayExpression':
-                value = this.getArrayExpression(node);
+                value = [
+                    '[',
+                    getArrayElements.call(this, node.elements).join(', '),
+                    ']'
+                ].join('');
                 break;
 
             case 'ArrowFunctionExpression':
-                value = this.getArrowFunctionExpression(node);
+                value = this.getFunctionExpression(node, true);
                 break;
 
             case 'AssignmentExpression':
-                value = this.getAssignmentExpression(node);
+                value = [
+                    makeOperatorExpression(node).join(' ')
+                ].join('');
                 break;
 
             case 'BinaryExpression':
-                value = this.getBinaryExpression(node);
+                value = makeOperatorExpression(node).join(' ');
                 break;
 
             case 'BlockStatement':
-                value = this.getBlockStatement(node);
+                value = node.body.map(node => `${this.getNodeValue(node)} ;`).join('');
                 break;
 
             case 'CallExpression':
@@ -77,23 +86,30 @@ const transformer = {
                 break;
 
             case 'ConditionalExpression':
-                value = transformer.getConditionalExpression(node);
+                value = `(${this.getNodeValue(node.test)}) ?
+                    (${this.getNodeValue(node.consequent)}) :
+                    (${this.getNodeValue(node.alternate)})`;
                 break;
 
             case 'ExpressionStatement':
-                value = this.getExpressionStatement(node);
+                value = this.getNodeValue(node.expression);
                 break;
 
             case 'ForInStatement':
-                value = this.getForInStatement(node);
+                value = makeForExpression.call(this, node, 'in');
                 break;
 
             case 'ForOfStatement':
-                value = this.getForOfStatement(node);
+                value = makeForExpression.call(this, node, 'of');
                 break;
 
             case 'ForStatement':
-                value = this.getForStatement(node);
+                // Return a joined array instead of just a tmplate string for better control over formatting.
+                value = [
+                    `for (${this.getNodeValue(node.init)}; ${this.getNodeValue(node.test)}; ${this.getNodeValue(node.update)}) {`,
+                    this.getNodeValue(node.body),
+                    '}'
+                ].join('');
                 break;
 
             case 'FunctionExpression':
@@ -101,43 +117,70 @@ const transformer = {
                 break;
 
             case 'Identifier':
-                value = this.getIdentifier(node);
+                value = node.name;
                 break;
 
             case 'IfStatement':
-                value = this.getIfStatement(node);
+                value = `if (${this.getNodeValue(node.test)}) {
+                    ${this.getNodeValue(node.consequent)}
+                }`;
                 break;
 
             case 'Literal':
-                value = this.getLiteral(node);
+                value = node.raw;
                 break;
 
             case 'LogicalExpression':
-                value = this.getLogicalExpression(node);
+                value = makeOperatorExpression(node).join(' ');
                 break;
 
             case 'MemberExpression':
-                value = this.getMemberExpression(node);
+                const nestedObj = node.object;
+
+                // TODO
+//                while (nestedObj) {
+                    value = this.getNodeValue(nestedObj) + this.getProperty(node);
+//                }
                 break;
 
             case 'NewExpression':
-                value = this.getNewExpression(node);
+                value = `new ${this.getCallExpression(node)}`;
                 break;
 
             case 'ObjectExpression':
-                value = this.getObjectExpression(node);
+                const props = node.properties;
+
+                value = !props.length ?
+                    '{}' :
+                    [
+                        '{',
+                        props.map(prop => {
+                            return `${this.getNodeValue(prop.key)}: ${this.getNodeValue(prop.value)}`;
+                        }),
+                        '}'
+                    ].join('');
                 break;
 
             case 'ReturnStatement':
-                value = this.getReturnStatement(node);
+                value = `return ${this.getNodeValue(node.argument)}`;
                 break;
 
             case 'SequenceExpression':
-                value = this.getSequenceExpression(node);
+                const expressions = node.expressions,
+                    res = [];
+
+                if (!expressions.length) {
+                    return res;
+                }
+
+                res.push(this.getNodeValue(expressions[0]));
+
+                value = res.concat(this.getNodeValue(expressions.slice(1)));
                 break;
 
             case 'TemplateLiteral':
-                value = this.getTemplateLiteral(node);
+                // TODO
+                value = '`TODO: parse template strings`';
                 break;
 
             case 'ThisExpression':
@@ -146,43 +189,39 @@ const transformer = {
 
             case 'UnaryExpression':
             case 'UpdateExpression':
-                value = this.getUnaryExpression(node);
+                const arg = node.argument;
+                // Pad the operator in cases where it's `delete`, `typeof`, etc.
+                let operator = node.operator;
+
+                if (needsPadding.has(operator)) {
+                    operator = ` ${operator} `;
+                }
+
+                while (arg) {
+                    return (node.prefix) ?
+                        operator + this.getNodeValue(arg) :
+                        this.getNodeValue(arg) + operator;
+                }
+
+                value = node.name;
                 break;
 
             case 'VariableDeclaration':
-                value = this.getVariableDeclaration(node);
+                value = `${node.kind} ${this.getVariableDeclarator(node.declarations)}`;
                 break;
 
             case 'WhileStatement':
-                value = transformer.getWhileStatement(node);
+                // Return a joined array instead of just a tmplate string for
+                // better control over formatting.
+                value = [
+                    `while (${this.getNodeValue(node.test)}) {`,
+                    `${this.getNodeValue(node.body)}`,
+                    '}'
+                ].join('');
                 break;
         }
 
         return value;
-    },
-
-    getArrayExpression: function (node) {
-        return [
-            '[',
-            getArrayElements.call(this, node.elements).join(', '),
-            ']'
-        ].join('');
-    },
-
-    getArrowFunctionExpression: function (node) {
-        return this.getFunctionExpression(node, true);
-    },
-
-    getAssignmentExpression: node => {
-        return [
-            makeOperatorExpression(node).join(' ')
-        ].join('');
-    },
-
-    getBinaryExpression: node => makeOperatorExpression(node).join(' '),
-
-    getBlockStatement: function (node) {
-        return node.body.map(node => `${this.getNodeValue(node)} ;`).join('');
     },
 
     getCallExpression: function (node) {
@@ -193,27 +232,6 @@ const transformer = {
         return `(${this.getNodeValue(node.test)}) ?
             (${this.getNodeValue(node.consequent)}) :
             (${this.getNodeValue(node.alternate)})`;
-    },
-
-    getExpressionStatement: function (node) {
-        return this.getNodeValue(node.expression);
-    },
-
-    getForInStatement: function (node) {
-        return makeForExpression.call(this, node, 'in');
-    },
-
-    getForOfStatement: function (node) {
-        return makeForExpression.call(this, node, 'of');
-    },
-
-    getForStatement: function (node) {
-        // Return a joined array instead of just a tmplate string for better control over formatting.
-        return [
-            `for (${this.getNodeValue(node.init)}; ${this.getNodeValue(node.test)}; ${this.getNodeValue(node.update)}) {`,
-            this.getNodeValue(node.body),
-            '}'
-        ].join('');
     },
 
     getFunctionExpression: function (node, isArrowFunction) {
@@ -229,44 +247,6 @@ const transformer = {
         );
 
         return value.join('');
-    },
-
-    getIdentifier: node => node.name,
-
-    getIfStatement: function (node) {
-        return `if (${this.getNodeValue(node.test)}) {
-            ${this.getNodeValue(node.consequent)}
-        }`;
-    },
-
-    getLiteral: node => node.raw,
-
-    getLogicalExpression: node => makeOperatorExpression(node).join(' '),
-
-    getMemberExpression: function (node) {
-        const nestedObj = node.object;
-
-        while (nestedObj) {
-            return this.getNodeValue(nestedObj) + this.getProperty(node);
-        }
-    },
-
-    getNewExpression: function (node) {
-        return `new ${this.getCallExpression(node)}`;
-    },
-
-    getObjectExpression: function (node) {
-        const props = node.properties;
-
-        return !props.length ?
-            '{}' :
-            [
-                '{',
-                props.map(prop => {
-                    return `${this.getNodeValue(prop.key)}: ${this.getNodeValue(prop.value)}`;
-                }),
-                '}'
-            ].join('');
     },
 
     getParams: params => {
@@ -287,54 +267,6 @@ const transformer = {
         return `${(computed ? '[' : '.')}${this.getNodeValue(node.property)}${(computed ? ']' : '')}`;
     },
 
-    getReturnStatement: function (node) {
-        return `return ${this.getNodeValue(node.argument)}`;
-    },
-
-    getSequenceExpression: function (node) {
-        const expressions = node.expressions,
-            res = [];
-
-        if (!expressions.length) {
-            return res;
-        }
-
-        res.push(this.getNodeValue(expressions[0]));
-
-        return res.concat(this.getNodeValue(expressions.slice(1)));
-    },
-
-    getTemplateLiteral: function () {
-        // TODO
-        return '`TODO: parse template strings`';
-    },
-
-    getUnaryExpression: (() => {
-        const needsPadding = new Set(['delete', 'instanceof', 'typeof']);
-
-        return function (node) {
-            const arg = node.argument;
-            // Pad the operator in cases where it's `delete`, `typeof`, etc.
-            let operator = node.operator;
-
-            if (needsPadding.has(operator)) {
-                operator = ` ${operator} `;
-            }
-
-            while (arg) {
-                return (node.prefix) ?
-                    operator + this.getNodeValue(arg) :
-                    this.getNodeValue(arg) + operator;
-            }
-
-            return node.name;
-        };
-    })(),
-
-    getVariableDeclaration: function (node) {
-        return `${node.kind} ${this.getVariableDeclarator(node.declarations)}`;
-    },
-
     getVariableDeclarator: function (nodes) {
         return nodes.reduce((acc, curr) => {
             const init = curr.init;
@@ -348,16 +280,6 @@ const transformer = {
 
             return acc;
         }, []).join(', ');
-    },
-
-    getWhileStatement: function (node) {
-        // Return a joined array instead of just a tmplate string for
-        // better control over formatting.
-        return [
-            `while (${this.getNodeValue(node.test)}) {`,
-            `${this.getNodeValue(node.body)}`,
-            '}'
-        ].join('');
     }
 };
 
