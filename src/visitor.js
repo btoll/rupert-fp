@@ -7,7 +7,7 @@ module.exports = {
             case 'ArrowFunctionExpression':
                 const bodies = node.body.body;
 
-                if (bodies) {
+                if (bodies && Array.isArray(bodies)) {
                     if (bodies.length === 1) {
 //                        results.push(parent);
                         results.push(node);
