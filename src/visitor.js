@@ -48,8 +48,16 @@ module.exports = {
                 node.body.body.forEach(node => this.visit(node, parent, results));
                 break;
 
+            case 'ObjectExpression':
+                node.properties.forEach(node => this.visit(node, parent, results));
+                return results;
+
             case 'Program':
                 node.body.forEach(node => this.visit(node, parent, results));
+                return results;
+
+            case 'Property':
+                this.visit(node.value, parent, results);
                 return results;
 
             case 'ReturnStatement':
