@@ -1,15 +1,31 @@
 /* eslint-disable no-case-declarations,one-var */
 'use strict';
 
+const isLoopStatement = (() => {
+    const list = new Set([
+        'ForStatement',
+        'ForInStatement',
+        'ForOfStatement',
+        'DoWhileStatement',
+        'WhileStatement'
+    ]);
+
+    return type => list.has(type);
+})();
+
 module.exports = {
     visit: function (node, parent, results) {
-        switch (node.type) {
+        const type = node.type;
+
+        switch (type) {
             case 'ArrowFunctionExpression':
                 const bodies = node.body.body;
 
                 if (bodies && Array.isArray(bodies)) {
-                    if (bodies.length === 1) {
-//                        results.push(parent);
+                    const type = bodies[0].type;
+
+                    // We don't want to capture the node if it's a loop statement or IfStatement.
+                    if (bodies.length === 1 && !(isLoopStatement(type) || type === 'IfStatement')) {
                         results.push(node);
                     } else {
                         bodies.forEach(node => this.visit(node, parent, results));
@@ -27,7 +43,7 @@ module.exports = {
 
                 if (callArgs.length) {
                     callArgs.forEach(node => this.visit(node, node, results));
-                } else if (node.callee.type === 'ArrowFunctionExpression') {
+                } else if (node.callee) {
                     this.visit(node.callee, node, results);
                 }
                 break;
@@ -36,10 +52,9 @@ module.exports = {
                 this.visit(node.expression, node, results);
                 break;
 
-            case 'ForStatement':
-            case 'ForInStatement':
-            case 'ForOfStatement':
-            case 'WhileStatement':
+            // If it's a loop statement have the expression return the type
+            // so it automatically matches the case.
+            case isLoopStatement(type) && type:
                 results.push(node);
                 break;
 
