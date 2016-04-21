@@ -35,11 +35,7 @@
   },
   "homepage": "https://github.com/btoll/rupert#readme",
   "dependencies": {
-    "chalk": "^1.1.1",
-    "esprima": "^2.7.0",
-    "js-beautify": "^1.6.2",
-    "logger": "git+https://github.com/btoll/logger.git",
-    "yargs": "^3.30.0"
+    "s": "git+https://github.com/btoll/s.git"
   },
   "devDependencies": {
     "babel-core": "^6.7.2",

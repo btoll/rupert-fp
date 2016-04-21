@@ -26,7 +26,10 @@ module.exports = {
 
                     // We don't want to capture the node if it's a loop statement or IfStatement.
                     if (bodies.length === 1 && !(isLoopStatement(type) || type === 'IfStatement')) {
-                        results.push(node);
+                        results.push({
+                            node,
+                            type: 'CombineArrowFunctionExpressions'
+                        });
                     } else {
                         bodies.forEach(node => this.visit(node, parent, results));
                     }
@@ -55,7 +58,10 @@ module.exports = {
             // If it's a loop statement have the expression return the type
             // so it automatically matches the case.
             case isLoopStatement(type) && type:
-                results.push(node);
+                results.push({
+                    node,
+                    type: 'DontUseLoops'
+                });
                 break;
 
             case 'FunctionExpression':

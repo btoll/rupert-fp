@@ -22,8 +22,9 @@ const logger = require('logger'),
     .argv,
 
     // Default to logging to stdout.
-    generator = require(`../src/generator/${!argv.html ? 'log' : 'html'}`),
-    makeTree = require('../src/index'),
+    generator = require(`s/src/generator/${!argv.html ? 'log' : 'html'}`),
+    visitor = require('../src/visitor'),
+    makeTree = require('s/src/index'),
     file = argv.file,
     // TODO
     log = console.log,
@@ -44,12 +45,12 @@ if (!file) {
     });
 
     stdin.on('end', () => {
-        makeTree(buf, generator, true)
+        makeTree(buf, visitor, generator, true)
         .then(log)
         .catch(error);
     });
 } else {
-    makeTree(file, generator, argv.verbose, false)
+    makeTree(file, visitor, generator, argv.verbose, false)
     .then(log)
     .catch(error);
 }
