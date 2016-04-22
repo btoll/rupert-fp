@@ -35,7 +35,8 @@
   },
   "homepage": "https://github.com/btoll/rupert#readme",
   "dependencies": {
-    "s": "git+https://github.com/btoll/s.git"
+    "s": "git+https://github.com/btoll/s.git",
+    "yargs": "^4.6.0"
   },
   "devDependencies": {
     "babel-core": "^6.7.2",

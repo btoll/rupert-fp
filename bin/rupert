@@ -24,11 +24,14 @@ const logger = require('logger'),
     // Default to logging to stdout.
     generator = require(`s/src/generator/${!argv.html ? 'log' : 'html'}`),
     visitor = require('../src/visitor'),
-    makeTree = require('s/src/index'),
+    h = require('s/src/index'),
     file = argv.file,
     // TODO
     log = console.log,
     error = logger.error;
+
+// Mixin our node type functions.
+h.register(visitor);
 
 if (!file) {
     const stdin = process.stdin;
@@ -45,12 +48,12 @@ if (!file) {
     });
 
     stdin.on('end', () => {
-        makeTree(buf, visitor, generator, true)
+        h.makeTree(buf, generator, true)
         .then(log)
         .catch(error);
     });
 } else {
-    makeTree(file, visitor, generator, argv.verbose, false)
+    h.makeTree(file, generator, argv.verbose, false)
     .then(log)
     .catch(error);
 }
