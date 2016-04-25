@@ -23,31 +23,34 @@ const captureManager = (() => {
     return {
         init(v) {
             stack.push({
-                arguments: [],
+                bound: new Set(),
+                free: new Set(),
                 params: v ?
-                    v.split(', ').reduce((acc, curr) => {
+                    new Set(v.split(',').reduce((acc, curr) => {
                         acc.push(curr);
                         return acc;
-                    }, []) :
-                [],
-                free: null
+                    }, [])) :
+                new Set()
             });
 
             capturing = true;
         },
-        capture(v) {
+        capture(v, isDeclared) {
             if (v === null) {
-                const ctx = stack.pop();
                 capturing = false;
-
-                ctx.free = ctx.arguments.filter(v => ctx.params.indexOf(v) === -1);
-
-                return ctx;
+                return stack.pop();
             } else {
                 if (capturing) {
                     const ctx = stack.pop();
 
-                    ctx.arguments.push(v);
+                    // If declared in the function body immediately add to bound list.
+                    // Else if not in the params list or bound list add to free list.
+                    if (isDeclared) {
+                        ctx.bound.add(v);
+                    } else if (!(ctx.params.has(v) || ctx.bound.has(v))) {
+                        ctx.free.add(v);
+                    }
+
                     stack.push(ctx);
                 }
             }
@@ -75,7 +78,7 @@ const captureFreeVariables = function (node, parent, results) {
     } else {
         if (node.body.type === 'CallExpression' && compareParams(node, node.body)) {
             results.push({
-                node: node,
+                node,
                 type: 'UnnecessaryFunctionNesting'
             });
         }
@@ -84,7 +87,7 @@ const captureFreeVariables = function (node, parent, results) {
     }
 
     const ctx = captureManager.capture(null);
-    if (ctx.free.length) {
+    if (ctx.free.size) {
         results.push({
             node,
             type: 'ImpureFunction'
@@ -96,7 +99,7 @@ const compareParams = (caller, callee) =>
     callee.params && getParams(caller.params).indexOf(getParams(callee.params)) === 0;
 
 const getParams = params =>
-    params.map(arg => arg.name).join(', ');
+    params.map(arg => arg.name).join(',');
 
 module.exports = {
     ArrowFunctionExpression: captureFreeVariables,
@@ -109,9 +112,7 @@ module.exports = {
     WhileStatement: captureLoops,
 
     Identifier(node, parent) {
-        if (parent.type !== 'VariableDeclaration') {
-            captureManager.capture(node.name);
-        }
+        captureManager.capture(node.name, (parent.type === 'VariableDeclaration'));
     }
 };
 
