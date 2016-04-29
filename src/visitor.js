@@ -63,26 +63,29 @@ const captureFreeVariables = function (node, parent, results) {
 
     captureManager.init(getParams(node.params));
 
-    if (bodies && Array.isArray(bodies)) {
+    if (bodies && bodies.length && Array.isArray(bodies)) {
         const type = bodies[0].type;
 
-        // We don't want to capture the node if it's a loop statement or IfStatement.
-        if (bodies.length === 1 && !(isLoopStatement(type) || type === 'IfStatement')) {
-            results.push({
-                node: parent,
-                type: 'UnnecessaryBraces'
-            });
+        if (bodies.length === 1) {
+            if (!(isLoopStatement(type) || type === 'IfStatement')) {
+                results.push({
+                    node: parent,
+                    type: 'UnnecessaryBraces'
+                });
+            }
+
+            if (bodies[0].expression) {
+                if (compareArgs(node, bodies[0].expression)) {
+                    results.push({
+                        node,
+                        type: 'FunctionNesting'
+                    });
+                }
+            }
         }
 
         bodies.forEach(body => this.visit(body, node, results));
-    } else {
-        if (node.body.type === 'CallExpression' && compareParams(node, node.body)) {
-            results.push({
-                node,
-                type: 'UnnecessaryFunctionNesting'
-            });
-        }
-
+    } else if (node.body) {
         this.visit(node.body, node, results);
     }
 
@@ -90,13 +93,18 @@ const captureFreeVariables = function (node, parent, results) {
     if (ctx.free.size) {
         results.push({
             node,
-            type: 'ImpureFunction'
+            type: 'ImpureFunction',
+            desc: `Free variables: ${Array.from(ctx.free.values()).join(', ')}`
         });
     }
 };
 
-const compareParams = (caller, callee) =>
-    callee.params && getParams(caller.params).indexOf(getParams(callee.params)) === 0;
+const compareArgs = (caller, callee) =>
+    // TODO
+    callee.arguments && getParams(caller.params).indexOf(getParams(callee.arguments)) === 0;
+
+// const compareParams = (caller, callee) =>
+//     callee.params && getParams(caller.params).indexOf(getParams(callee.params)) === 0;
 
 const getParams = params =>
     params.map(arg => arg.name).join(',');
