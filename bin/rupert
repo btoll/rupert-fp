@@ -11,6 +11,7 @@ const logger = require('logger'),
     .describe('f', 'The file to analyze')
 
     .describe('flags', 'Specifies which types are captured')
+    .nargs('f', 1)
 
     .describe('html', 'Creates an html document of the analysis')
     .boolean('html')
@@ -34,8 +35,8 @@ const logger = require('logger'),
 
 visitor.setFlags(
     flags != null ?
-    flags :
-    255
+        flags :
+        255
 );
 
 // Logging is enabled by default.
