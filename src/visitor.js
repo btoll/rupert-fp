@@ -13,7 +13,7 @@ const isLoopStatement = type => list.has(type);
 const captureLoops = (node, parent, results) =>
     results.push({
         node,
-        type: 'DontUseLoops'
+        type: 'NoLoops'
     });
 
 const captureManager = (() => {
