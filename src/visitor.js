@@ -1,5 +1,11 @@
 'use strict';
 
+let flags;
+const FunctionNesting = 1;
+const ImpureFunction = 2;
+const NoLoops = 4;
+const UnnecessaryBraces = 8;
+
 const list = new Set([
     'ForStatement',
     'ForInStatement',
@@ -10,11 +16,14 @@ const list = new Set([
 
 const isLoopStatement = type => list.has(type);
 
-const captureLoops = (node, parent, results) =>
-    results.push({
-        node,
-        type: 'NoLoops'
-    });
+const captureLoops = (node, parent, results) => {
+    if (flags & NoLoops) {
+        results.push({
+            node,
+            type: 'NoLoops'
+        });
+    }
+};
 
 const captureManager = (() => {
     const stack = [];
@@ -60,26 +69,33 @@ const captureManager = (() => {
 
 const captureFreeVariables = function (node, parent, results) {
     const bodies = node.body.body;
+    const impureFunctionFlag = !!(flags & ImpureFunction);
 
-    captureManager.init(getParams(node.params));
+    if (impureFunctionFlag) {
+        captureManager.init(getParams(node.params));
+    }
 
     if (bodies && bodies.length && Array.isArray(bodies)) {
         const type = bodies[0].type;
 
         if (bodies.length === 1) {
-            if (!(isLoopStatement(type) || type === 'IfStatement')) {
-                results.push({
-                    node: parent,
-                    type: 'UnnecessaryBraces'
-                });
+            if (flags & UnnecessaryBraces) {
+                if (!(isLoopStatement(type) || type === 'IfStatement')) {
+                    results.push({
+                        node: parent,
+                        type: 'UnnecessaryBraces'
+                    });
+                }
             }
 
-            if (bodies[0].expression) {
-                if (compareArgs(node, bodies[0].expression)) {
-                    results.push({
-                        node,
-                        type: 'FunctionNesting'
-                    });
+            if (flags & FunctionNesting) {
+                if (bodies[0].expression) {
+                    if (compareArgs(node, bodies[0].expression)) {
+                        results.push({
+                            node,
+                            type: 'FunctionNesting'
+                        });
+                    }
                 }
             }
         }
@@ -89,13 +105,15 @@ const captureFreeVariables = function (node, parent, results) {
         this.visit(node.body, node, results);
     }
 
-    const ctx = captureManager.capture(null);
-    if (ctx.free.size) {
-        results.push({
-            node,
-            type: 'ImpureFunction',
-            desc: `Free variables: ${Array.from(ctx.free.values()).join(', ')}`
-        });
+    if (impureFunctionFlag) {
+        const ctx = captureManager.capture(null);
+        if (ctx.free.size) {
+            results.push({
+                node,
+                type: 'ImpureFunction',
+                desc: `Free variables: ${Array.from(ctx.free.values()).join(', ')}`
+            });
+        }
     }
 };
 
@@ -120,7 +138,12 @@ module.exports = {
     WhileStatement: captureLoops,
 
     Identifier(node, parent) {
-        captureManager.capture(node.name, (parent.type === 'VariableDeclaration'));
+        if (flags & ImpureFunction) {
+            captureManager.capture(node.name, (parent.type === 'VariableDeclaration'));
+        }
+    },
+    setFlags(f) {
+        flags = f;
     }
 };
 

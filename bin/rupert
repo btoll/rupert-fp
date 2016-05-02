@@ -10,6 +10,8 @@ const logger = require('logger'),
     .nargs('f', 1)
     .describe('f', 'The file to analyze')
 
+    .describe('flags', 'Specifies which types are captured')
+
     .describe('html', 'Creates an html document of the analysis')
     .boolean('html')
 
@@ -25,9 +27,16 @@ const logger = require('logger'),
     visitor = require('../src/visitor'),
     h = require('s/src/index'),
     file = argv.file,
+    flags = Number(argv.flags),
     // TODO
     log = console.log,
     error = logger.error;
+
+visitor.setFlags(
+    flags != null ?
+    flags :
+    255
+);
 
 // Logging is enabled by default.
 if (!argv.v) {
