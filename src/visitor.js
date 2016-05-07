@@ -1,6 +1,7 @@
 'use strict';
 
 let flags;
+
 const FunctionNesting = 1;
 const ImpureFunction = 2;
 const NoLoops = 4;
@@ -13,17 +14,6 @@ const list = new Set([
     'DoWhileStatement',
     'WhileStatement'
 ]);
-
-const isLoopStatement = type => list.has(type);
-
-const captureLoops = (node, parent, results) => {
-    if (flags & NoLoops) {
-        results.push({
-            node,
-            type: 'NoLoops'
-        });
-    }
-};
 
 const captureManager = (() => {
     const stack = [];
@@ -67,7 +57,18 @@ const captureManager = (() => {
     };
 })();
 
-const captureFreeVariables = function (node, parent, results) {
+const checkCallExpression = (parent, node, results) => {
+    if (flags & FunctionNesting) {
+        if (node.type === 'CallExpression' && compareArgs(parent, node)) {
+            results.push({
+                node: parent,
+                type: 'FunctionNesting'
+            });
+        }
+    }
+};
+
+const checkFunctionExpression = function (node, parent, results) {
     const bodies = node.body.body;
     const impureFunctionFlag = !!(flags & ImpureFunction);
 
@@ -76,7 +77,8 @@ const captureFreeVariables = function (node, parent, results) {
     }
 
     if (bodies && bodies.length && Array.isArray(bodies)) {
-        const type = bodies[0].type;
+        const firstBody = bodies[0],
+            type = firstBody.type;
 
         if (bodies.length === 1) {
             if (flags & UnnecessaryBraces) {
@@ -88,20 +90,14 @@ const captureFreeVariables = function (node, parent, results) {
                 }
             }
 
-            if (flags & FunctionNesting) {
-                if (bodies[0].expression) {
-                    if (compareArgs(node, bodies[0].expression)) {
-                        results.push({
-                            node,
-                            type: 'FunctionNesting'
-                        });
-                    }
-                }
+            if (firstBody.expression) {
+                checkCallExpression(node, firstBody.expression, results);
             }
         }
 
         bodies.forEach(body => this.visit(body, node, results));
     } else if (node.body) {
+        checkCallExpression(node, node.body, results);
         this.visit(node.body, node, results);
     }
 
@@ -117,25 +113,36 @@ const captureFreeVariables = function (node, parent, results) {
     }
 };
 
-const compareArgs = (caller, callee) =>
-    // TODO
-    callee.arguments && getParams(caller.params).indexOf(getParams(callee.arguments)) === 0;
+const checkLoop = (node, parent, results) => {
+    if (flags & NoLoops) {
+        results.push({
+            node,
+            type: 'NoLoops'
+        });
+    }
+};
 
+const compareArgs = (caller, callee) =>
+    getParams(caller.params).indexOf(getParams(callee.arguments)) === 0;
+
+// TODO
 // const compareParams = (caller, callee) =>
-//     callee.params && getParams(caller.params).indexOf(getParams(callee.params)) === 0;
+//     getParams(caller.params).indexOf(getParams(callee.params)) === 0;
 
 const getParams = params =>
     params.map(arg => arg.name).join(',');
 
-module.exports = {
-    ArrowFunctionExpression: captureFreeVariables,
-    FunctionExpression: captureFreeVariables,
+const isLoopStatement = type => list.has(type);
 
-    ForStatement: captureLoops,
-    ForInStatement: captureLoops,
-    ForOfStatement: captureLoops,
-    DoWhileStatement: captureLoops,
-    WhileStatement: captureLoops,
+module.exports = {
+    ArrowFunctionExpression: checkFunctionExpression,
+    FunctionExpression: checkFunctionExpression,
+
+    ForStatement: checkLoop,
+    ForInStatement: checkLoop,
+    ForOfStatement: checkLoop,
+    DoWhileStatement: checkLoop,
+    WhileStatement: checkLoop,
 
     Identifier(node, parent) {
         if (flags & ImpureFunction) {
