@@ -84,7 +84,7 @@ const checkFunctionExpression = function (node, parent, results) {
             if (flags & UnnecessaryBraces) {
                 if (!(isLoopStatement(type) || type === 'IfStatement')) {
                     results.push({
-                        node: parent,
+                        node,
                         type: 'UnnecessaryBraces'
                     });
                 }
