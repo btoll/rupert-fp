@@ -5,26 +5,35 @@ const logger = require('logger'),
     argv = require('yargs')
     .usage('Usage: rupert [options]')
 
+    .describe('bitmask', 'The bitmask which determines the nodes to be captured')
+    .alias('bitmask', 'b')
+    .nargs('bitmask', 1)
+
     .describe('debug', 'Turns on debug logging')
     .alias('debug', 'd')
     .boolean('debug')
 
     .describe('file', 'The file to analyze')
     .alias('file', 'f')
-    .nargs('f', 1)
-
-    .describe('flags', 'A bitmask, specifies which types are captured')
-    .nargs('f', 1)
+    .nargs('file', 1)
 
     .describe('html', 'Creates an html document of the analysis')
     .boolean('html')
 
-    .describe('verbose', 'Shows code snippets')
+    .describe('verbose', 'Show code snippets')
     .alias('verbose', 'v')
     .boolean('v')
 
     .help('help')
     .alias('help', 'h')
+
+    // TODO
+    .group([
+        'FunctionNesting: 1',
+        'ImpureFunction: 2',
+        'NoLoops: 4',
+        'UnnecessaryBraces: 8'
+    ], 'Rules')
     .argv,
 
     // Default to raw.
@@ -38,11 +47,11 @@ const logger = require('logger'),
     visitor = require('../src/visitor'),
     h = require('s/src/index'),
     file = argv.file,
-    flags = Number(argv.flags);
+    bitmask = Number(argv.bitmask);
 
-visitor.setFlags(
-    !isNaN(flags) ?
-        flags :
+visitor.setBitmask(
+    !isNaN(bitmask) ?
+        bitmask :
         255
 );
 

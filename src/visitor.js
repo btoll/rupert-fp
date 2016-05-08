@@ -1,6 +1,6 @@
 'use strict';
 
-let flags;
+let bitmask;
 
 const FunctionNesting = 1;
 const ImpureFunction = 2;
@@ -55,7 +55,7 @@ const captureManager = (() => {
 })();
 
 const checkCallExpression = (parent, node, results) => {
-    if (flags & FunctionNesting) {
+    if (bitmask & FunctionNesting) {
         if (node.type === 'CallExpression' && compareArgs(parent, node)) {
             results.push({
                 node: parent,
@@ -67,7 +67,7 @@ const checkCallExpression = (parent, node, results) => {
 
 const checkFunctionExpression = function (node, parent, results) {
     const bodies = node.body.body;
-    const impureFunctionFlag = !!(flags & ImpureFunction);
+    const impureFunctionFlag = !!(bitmask & ImpureFunction);
 
     if (impureFunctionFlag) {
         captureManager.init(getParams(node.params));
@@ -78,7 +78,7 @@ const checkFunctionExpression = function (node, parent, results) {
             type = firstBody.type;
 
         if (bodies.length === 1) {
-            if (flags & UnnecessaryBraces) {
+            if (bitmask & UnnecessaryBraces) {
                 if (!(isLoopStatement(type) || type === 'IfStatement')) {
                     results.push({
                         node,
@@ -111,7 +111,7 @@ const checkFunctionExpression = function (node, parent, results) {
 };
 
 const checkLoop = (node, parent, results) => {
-    if (flags & NoLoops) {
+    if (bitmask & NoLoops) {
         results.push({
             node,
             type: 'NoLoops'
@@ -146,12 +146,12 @@ module.exports = {
     WhileStatement: checkLoop,
 
     Identifier(node, parent) {
-        if (flags & ImpureFunction) {
+        if (bitmask & ImpureFunction) {
             captureManager.capture(node.name, (parent.type === 'VariableDeclaration'));
         }
     },
-    setFlags(f) {
-        flags = f;
+    setBitmask(b) {
+        bitmask = b;
     }
 };
 
