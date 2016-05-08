@@ -56,7 +56,7 @@ const captureManager = (() => {
 
 const checkCallExpression = (parent, node, results) => {
     if (bitmask & FunctionNesting) {
-        if (node.type === 'CallExpression' && compareArgs(parent, node)) {
+        if (node.type === 'CallExpression' && compareSignature(parent, node)) {
             results.push({
                 node: parent,
                 type: 'FunctionNesting'
@@ -119,12 +119,18 @@ const checkLoop = (node, parent, results) => {
     }
 };
 
-const compareArgs = (caller, callee) =>
-    getParams(caller.params).indexOf(getParams(callee.arguments)) === 0;
+const compareSignature = (caller, callee) => {
+    const args = callee.arguments;
 
-// TODO
-// const compareParams = (caller, callee) =>
-//     getParams(caller.params).indexOf(getParams(callee.params)) === 0;
+    // Note that we can't compare non-Identifiers in the callee, i.e.:
+    //
+    //      callee([1, 2, 4]);
+    //
+    // Always first make sure that we'd only ever be comparing Identifiers.
+    return args.every(arg => arg.type === 'Identifier') ?
+        getParams(caller.params).indexOf(getParams(args)) === 0 :
+        false;
+};
 
 const getParams = params =>
     params.map(arg => arg.name).join(',');

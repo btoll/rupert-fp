@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/btoll/rupert.svg?branch=master)](https://travis-ci.org/btoll/rupert)
 
-**Rupert** is JavaScript static code analysis tool and functional programming helper. Its aim is to aid in the transition of moving from an OOP paradigm to a more functional one.
+**Rupert** is a JavaScript static code analysis tool and functional programming helper. Its aim is to aid in the transition of moving from an OOP paradigm to a more functional one.
 
 ## How It Works
 
@@ -11,6 +11,11 @@
 - ImpureFunction
 - NoLoops
 - UnnecessaryBraces
+
+### FunctionNesting
+### ImpureFunction
+### NoLoops
+### UnnecessaryBraces
 
 By default, all of the nodes that match a rule will be collected and printed when found in the source code. However, this can be controlled through bit flags.
 
