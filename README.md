@@ -53,11 +53,12 @@ Create an `html` document of the same tree:
 
     Property | Description
     ------------ | -------------
-    -f, --file | The file to analyze
+    --debug, -d | Turns on debug logging
+    --file, -f | The file to analyze
     --flags | Specifies which types are captured
     --html | Creates an html document of the analysis
-    -h, --help | Show help
-    -v, --debug | Turns on verbose debug logging
+    --verbose, -v | Shows code snippets
+    --help, -h | Show help
 
 ## License
 

@@ -5,25 +5,36 @@ const logger = require('logger'),
     argv = require('yargs')
     .usage('Usage: rupert [options]')
 
-    .alias('f', 'file')
-    .nargs('f', 1)
-    .describe('f', 'The file to analyze')
+    .describe('debug', 'Turns on debug logging')
+    .alias('debug', 'd')
+    .boolean('debug')
 
-    .describe('flags', 'Specifies which types are captured')
+    .describe('file', 'The file to analyze')
+    .alias('file', 'f')
+    .nargs('f', 1)
+
+    .describe('flags', 'A bitmask, specifies which types are captured')
     .nargs('f', 1)
 
     .describe('html', 'Creates an html document of the analysis')
     .boolean('html')
 
-    .alias('v', 'debug')
+    .describe('verbose', 'Shows code snippets')
+    .alias('verbose', 'v')
     .boolean('v')
-    .describe('v', 'Turns on verbose debug logging')
 
-    .help('h')
+    .help('help')
+    .alias('help', 'h')
     .argv,
 
-    // Default to printing to stdout.
-    generator = require(`s/src/generator/${!argv.html ? 'log' : 'html'}`),
+    // Default to raw.
+    generator = require(
+        `s/src/generator/${
+            argv.html ? 'html' :
+                argv.v ? 'log' :
+                'raw'
+        }`
+    ),
     visitor = require('../src/visitor'),
     h = require('s/src/index'),
     file = argv.file,
@@ -36,7 +47,7 @@ visitor.setFlags(
 );
 
 // Logging is enabled by default.
-if (!argv.v) {
+if (!argv.debug) {
     logger.disable();
 }
 
