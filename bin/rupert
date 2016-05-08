@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-/* eslint-disable no-console */
 'use strict';
 
 const logger = require('logger'),
@@ -28,10 +27,7 @@ const logger = require('logger'),
     visitor = require('../src/visitor'),
     h = require('s/src/index'),
     file = argv.file,
-    flags = Number(argv.flags),
-    // TODO
-    log = console.log,
-    error = logger.error;
+    flags = Number(argv.flags);
 
 visitor.setFlags(
     !isNaN(flags) ?
@@ -63,12 +59,12 @@ if (!file) {
 
     stdin.on('end', () => {
         h.makeTree(buf, generator, true)
-        .then(log)
-        .catch(error);
+        .then(logger.raw)
+        .catch(logger.error);
     });
 } else {
-    h.makeTree(file, generator, argv.verbose, false)
-    .then(log)
-    .catch(error);
+    h.makeTree(file, generator, false)
+    .then(logger.raw)
+    .catch(logger.error);
 }
 
