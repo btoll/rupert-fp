@@ -17,7 +17,6 @@ const list = new Set([
 
 const captureManager = (() => {
     const stack = [];
-    let capturing = false;
 
     return {
         init(v) {
@@ -31,15 +30,13 @@ const captureManager = (() => {
                     }, [])) :
                 new Set()
             });
-
-            capturing = true;
         },
         capture(v, isDeclared) {
             if (v === null) {
-                capturing = false;
                 return stack.pop();
             } else {
-                if (capturing) {
+                // Always be in capture mode if there are any contexts on the stack.
+                if (stack.length) {
                     const ctx = stack.pop();
 
                     // If declared in the function body immediately add to bound list.
@@ -137,6 +134,10 @@ const isLoopStatement = type => list.has(type);
 module.exports = {
     ArrowFunctionExpression: checkFunctionExpression,
     FunctionExpression: checkFunctionExpression,
+
+    FunctionDeclaration(node, parent, results) {
+        node.body.body.forEach(body => this.visit(body, node, results));
+    },
 
     ForStatement: checkLoop,
     ForInStatement: checkLoop,
