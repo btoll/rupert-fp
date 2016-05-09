@@ -7,15 +7,51 @@
 ## How It Works
 
 **Rupert** analyzes a data stream for the following rules:
+
 - FunctionNesting
 - ImpureFunction
 - NoLoops
 - UnnecessaryBraces
 
 #### FunctionNesting
+
+    callback(function (data) {
+        doSomething(data);
+    });
+
 #### ImpureFunction
+
+    Identifier(node, parent) {
+        if (bitmask & ImpureFunction) {
+            captureManager.capture(node.name, (parent.type === 'VariableDeclaration'));
+        }
+    }
+
 #### NoLoops
+
+    function double(nums) {
+        for (let i = 0, len = nums.length; i < len; i++) {
+            nums[i] *= 2;
+        }
+
+        return nums;
+    }
+
+    const nums = double([1, 2, 4]);
+
 #### UnnecessaryBraces
+
+    new Promise((resolve, reject) => {
+        setTimeout(() => {
+            resolve('foo');
+        }, 1000);
+    })
+    .then(data => {
+        console.log(data);
+    })
+    .catch(err => {
+        console.error(err);
+    });
 
 By default, all of the nodes that match a rule will be collected and printed when found in the source code. However, this can be controlled through bit flags.
 
@@ -82,6 +118,4 @@ The following are all the same (dumps all nodes matching any rule):
 ## Author
 
 Benjamin Toll
-
-[Esprima]: http://esprima.org/
 
