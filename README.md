@@ -12,10 +12,10 @@
 - NoLoops
 - UnnecessaryBraces
 
-### FunctionNesting
-### ImpureFunction
-### NoLoops
-### UnnecessaryBraces
+#### FunctionNesting
+#### ImpureFunction
+#### NoLoops
+#### UnnecessaryBraces
 
 By default, all of the nodes that match a rule will be collected and printed when found in the source code. However, this can be controlled through bit flags.
 
