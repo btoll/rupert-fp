@@ -19,12 +19,14 @@ const captureManager = (() => {
     const stack = [];
 
     return {
-        init(v) {
+        init(params) {
+            const map = mapParams(params);
+
             stack.push({
                 bound: new Set(),
                 free: new Set(),
-                params: v ?
-                    new Set(v.split(',').reduce((acc, curr) => {
+                params: map ?
+                    new Set(map.split(',').reduce((acc, curr) => {
                         acc.push(curr);
                         return acc;
                     }, [])) :
@@ -70,7 +72,7 @@ const checkFunctionExpression = function (node, parent, results) {
     const impureFunctionFlag = !!(bitmask & ImpureFunction);
 
     if (impureFunctionFlag) {
-        captureManager.init(getParams(node.params));
+        captureManager.init(node.params);
     }
 
     if (bodies && bodies.length && Array.isArray(bodies)) {
@@ -98,6 +100,7 @@ const checkFunctionExpression = function (node, parent, results) {
         this.visit(node.body, node, results);
     }
 
+    // TODO: DRY!
     if (impureFunctionFlag) {
         const ctx = captureManager.capture(null);
         if (ctx.free.size) {
@@ -128,11 +131,11 @@ const compareSignature = (caller, callee) => {
     //
     // Always first make sure that we'd only ever be comparing Identifiers.
     return args.every(arg => arg.type === 'Identifier') ?
-        getParams(caller.params).indexOf(getParams(args)) === 0 :
+        mapParams(caller.params).indexOf(mapParams(args)) === 0 :
         false;
 };
 
-const getParams = params =>
+const mapParams = params =>
     params.map(arg => arg.name).join(',');
 
 const isLoopStatement = type => list.has(type);
@@ -142,7 +145,25 @@ module.exports = {
     FunctionExpression: checkFunctionExpression,
 
     FunctionDeclaration(node, parent, results) {
+        const impureFunctionFlag = !!(bitmask & ImpureFunction);
+
+        if (impureFunctionFlag) {
+            captureManager.init(node.params);
+        }
+
         node.body.body.forEach(body => this.visit(body, node, results));
+
+        // TODO: DRY!
+        if (impureFunctionFlag) {
+            const ctx = captureManager.capture(null);
+            if (ctx.free.size) {
+                results.push({
+                    node,
+                    type: 'ImpureFunction',
+                    desc: `Free variables: ${Array.from(ctx.free.values()).join(', ')}`
+                });
+            }
+        }
     },
 
     ForStatement: checkLoop,
@@ -156,6 +177,12 @@ module.exports = {
             captureManager.capture(node.name, (parent.type === 'VariableDeclaration'));
         }
     },
+
+    ThisExpression() {
+        captureManager.capture('this');
+    },
+
+    // TODO: This isn't a node type!
     setBitmask(b) {
         bitmask = b;
     }
