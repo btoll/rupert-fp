@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/btoll/rupert.svg?branch=master)](https://travis-ci.org/btoll/rupert)
 
-**Rupert** is a JavaScript static code analysis tool and functional programming helper. Its aim is to aid in the transition of moving from an OOP paradigm to a more functional one.
+**Rupert** is a JavaScript static code analysis tool and functional programming helper. Its aim is to aid in the transition of moving from an object-oriented programming paradigm to a more functional one.
 
 ## How It Works
 
@@ -13,21 +13,55 @@
 - NoLoops
 - UnnecessaryBraces
 
-#### FunctionNesting
+By default, all of the nodes that match a rule will be collected and printed when found in the source code. However, this can be controlled through bit flags.
+
+### FunctionNesting
+
+Call expressions often are unnecessarily nested as in the example below. This is often seen in code structures that follow the callback pattern such as Promises.
+
+The rule compares the `caller`'s params and the `callee`'s arguments and matches in the following scenarios:
+
+- They are the same.
+- The callee has the same identifier names in order but less of them than the caller.
+- The callee has no function arguments.
+
+Example:
 
     callback(function (data) {
         doSomething(data);
     });
 
-#### ImpureFunction
+This can be re-written as:
 
-    Identifier(node, parent) {
-        if (bitmask & ImpureFunction) {
-            captureManager.capture(node.name, (parent.type === 'VariableDeclaration'));
+    callback(doSomething);
+
+### ImpureFunction
+
+A function that is pure contains no free variables.
+
+Example:
+
+    module.exports = {
+        Identifier(node, parent) {
+            if (bitmask & ImpureFunction) {
+                captureManager.capture(node.name, (parent.type === 'VariableDeclaration'));
+            }
         }
-    }
+    };
 
-#### NoLoops
+This will match the `bitmask`, `ImpureFunction` and `captureManager` identifiers.
+
+### NoLoops
+
+Loops... don't use 'em! Matches:
+
+- ForStatement
+- ForInStatement
+- ForOfStatement
+- DoWhileStatement
+- WhileStatement
+
+Example:
 
     function double(nums) {
         for (let i = 0, len = nums.length; i < len; i++) {
@@ -39,7 +73,11 @@
 
     const nums = double([1, 2, 4]);
 
-#### UnnecessaryBraces
+### UnnecessaryBraces
+
+With the introduction of fat arrow functions, ES 2015 became a lot more expressive. Function bodies that contain a single expression can take advantage of the leaner syntax by dropping the curly braces.
+
+Example:
 
     new Promise((resolve, reject) => {
         setTimeout(() => {
@@ -53,7 +91,21 @@
         console.error(err);
     });
 
-By default, all of the nodes that match a rule will be collected and printed when found in the source code. However, this can be controlled through bit flags.
+This can be re-written as:
+
+    new Promise((resolve, reject) =>
+        setTimeout(() => resolve('foo'), 1000)
+    )
+    .then(data => console.log(data))
+    .catch(err => console.error(err));
+
+Note that the callbacks suffer from the same unnecessary nesting as described in the `FunctionNesting` rule. To fix this, the sample could be even further simplified:
+
+    new Promise((resolve, reject) =>
+        setTimeout(() => resolve('foo'), 1000)
+    )
+    .then(console.log)
+    .catch(console.error);
 
 ## Bit Flags and Bitmasks
 
