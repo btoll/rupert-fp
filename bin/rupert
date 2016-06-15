@@ -55,11 +55,6 @@ visitor.setBitmask(
         255
 );
 
-// Logging is enabled by default.
-if (!argv.debug) {
-    logger.disable();
-}
-
 // Mixin our node type functions.
 h.register(visitor);
 
