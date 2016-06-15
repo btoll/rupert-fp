@@ -130,8 +130,8 @@ In other words, just add the flags and use that number as the bitmask. This bitm
     ------------ | -------------
     --bitmask, -b | The bitmask which determines the nodes to be captured
     --debug, -d | Turns on debug logging
-    --file, -f | The file to analyze
     --html | Creates an html document of the analysis
+    --target, -t | The target to analyze
     --verbose, -v | Show code snippets
     --help, -h | Show help
 
@@ -139,29 +139,29 @@ In other words, just add the flags and use that number as the bitmask. This bitm
 
 Dump the tree to `stdout` (raw):
 
-    rupert -f foo.js
+    rupert -t foo.js
 
 Dump the tree to `stdout` (verbose, with code snippets that match the rules):
 
-    rupert -f foo.js -v
+    rupert -t foo.js -v
 
 Create an `html` document of the same tree (always verbose):
 
-    rupert -f foo.js --html
+    rupert -t foo.js --html
 
 Output only `ImpureFunction` and `NoLoops`:
 
-    rupert -f foo.js --bitmask 6
+    rupert -t foo.js --bitmask 6
 
 Output only `FunctionNesting`, `NoLoops` and `UnnecessaryBraces`:
 
-    rupert -f foo.js -b 13
+    rupert -t foo.js -b 13
 
 The following are all the same (dumps all nodes matching any rule):
 
-    rupert -f foo.js
-    rupert -f foo.js -b 15
-    rupert -f foo.js --bitmask 255
+    rupert -t foo.js
+    rupert -t foo.js -b 15
+    rupert -t foo.js --bitmask 255
 
 ## License
 

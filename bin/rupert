@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 'use strict';
 
-const logger = require('logger'),
+const fs = require('fs'),
+    glob = require('glob'),
+    logger = require('logger'),
     argv = require('yargs')
     .usage('Usage: rupert [options]')
 
@@ -13,12 +15,12 @@ const logger = require('logger'),
     .alias('debug', 'd')
     .boolean('debug')
 
-    .describe('file', 'The file to analyze')
-    .alias('file', 'f')
-    .nargs('file', 1)
-
     .describe('html', 'Creates an html document of the analysis')
     .boolean('html')
+
+    .describe('target', 'The target to analyze')
+    .alias('target', 't')
+    .nargs('target', 1)
 
     .describe('verbose', 'Show code snippets')
     .alias('verbose', 'v')
@@ -27,13 +29,12 @@ const logger = require('logger'),
     .help('help')
     .alias('help', 'h')
 
-    // TODO
     .group([
         'FunctionNesting: 1',
         'ImpureFunction: 2',
         'NoLoops: 4',
         'UnnecessaryBraces: 8'
-    ], 'Rules')
+    ], 'Rules:')
     .argv,
 
     // Default to raw.
@@ -46,7 +47,7 @@ const logger = require('logger'),
     ),
     visitor = require('../src/visitor'),
     h = require('s/src/index'),
-    file = argv.file,
+    target = argv.target,
     bitmask = Number(argv.bitmask);
 
 visitor.setBitmask(
@@ -58,7 +59,7 @@ visitor.setBitmask(
 // Mixin our node type functions.
 h.register(visitor);
 
-if (!file) {
+if (!target) {
     const stdin = process.stdin;
     let buf = '';
 
@@ -78,8 +79,30 @@ if (!file) {
         .catch(logger.error);
     });
 } else {
-    h.makeTree(file, generator, false)
-    .then(logger.raw)
-    .catch(logger.error);
+    fs.stat(target, (err, stats) => {
+        if (err) {
+            logger.error('There was a problem accessing the target!');
+        } else {
+            if (stats.isFile()) {
+                h.makeTree(target, generator, false)
+                .then(logger.raw)
+                .catch(logger.error);
+            } else {
+                glob(`${target}/*.js`, (err, files) => {
+                    if (err) {
+                        logger.error('There was a problem globbing the files!');
+                    } else {
+                        files.forEach(file =>
+                            h.makeTree(file, generator, false)
+                            .then(data =>
+                                (logger.info(`Processing file ${file}`), logger.raw(`${data}`))
+                            )
+                            .catch(logger.error)
+                        );
+                    }
+                });
+            }
+        }
+    });
 }
 
