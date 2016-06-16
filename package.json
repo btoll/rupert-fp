@@ -1,6 +1,6 @@
 {
   "name": "rupert",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Static analysis of functional patterns in JavaScript",
   "bin": {
     "rupert": "./bin/rupert"
@@ -26,6 +26,8 @@
   "keywords": [
     "functional programming",
     "FP",
+    "static code analysis",
+    "static analysis",
     "Esprima"
   ],
   "author": "Benjamin Toll <benjam72@yahoo.com> (http://www.benjamintoll.com)",
