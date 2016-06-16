@@ -81,7 +81,11 @@ const checkFunctionExpression = function (node, parent, results) {
 
         if (bodies.length === 1) {
             if (bitmask & UnnecessaryBraces) {
-                if (!(isLoopStatement(type) || type === 'IfStatement')) {
+                if (!(
+                    isLoopStatement(type) ||
+                    isObjectExpression(firstBody.argument) ||
+                    type === 'IfStatement'
+                )) {
                     results.push({
                         node,
                         type: 'UnnecessaryBraces'
@@ -139,6 +143,11 @@ const mapParams = params =>
     params.map(arg => arg.name).join(',');
 
 const isLoopStatement = type => list.has(type);
+
+// An ObjectExpression cannot be a candidate for an UnnecessaryBrace type b/c the interpreter determines
+// that a brace following a fat arrow function is a block. In other words, it is not able to accurately
+// determine if the brace signifies the beginning of a block or an ObjectExpression.
+const isObjectExpression = node => node && node.type === 'ObjectExpression';
 
 module.exports = {
     ArrowFunctionExpression: checkFunctionExpression,
