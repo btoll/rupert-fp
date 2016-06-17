@@ -46,7 +46,7 @@ const fs = require('fs'),
         }`
     ),
     visitor = require('../src/visitor'),
-    h = require('s/src/index'),
+    h = require('s'),
     target = argv.target,
     bitmask = Number(argv.bitmask);
 
