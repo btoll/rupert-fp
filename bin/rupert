@@ -30,7 +30,7 @@ const fs = require('fs'),
     .alias('help', 'h')
 
     .group([
-        'FunctionNesting: 1',
+        'PointFree: 1',
         'ImpureFunction: 2',
         'NoLoops: 4',
         'UnnecessaryBraces: 8'

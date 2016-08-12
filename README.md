@@ -8,14 +8,14 @@
 
 **Rupert** analyzes a data stream for the following rules:
 
-- FunctionNesting
+- PointFree
 - ImpureFunction
 - NoLoops
 - UnnecessaryBraces
 
 By default, all of the nodes that match a rule will be collected and printed when found in the source code. However, this can be controlled through bit flags.
 
-### FunctionNesting
+### PointFree
 
 Call expressions often are unnecessarily nested as in the example below. This is often seen in code structures that follow the callback pattern such as Promises.
 
@@ -99,7 +99,7 @@ This can be re-written as:
     .then(data => console.log(data))
     .catch(err => console.error(err));
 
-Note that the callbacks suffer from the same unnecessary nesting as described in the `FunctionNesting` rule. To fix this, the sample could be even further simplified:
+Note that the callbacks suffer from the same unnecessary nesting as described in the `PointFree` rule. To fix this, the sample could be even further simplified:
 
     new Promise((resolve, reject) =>
         setTimeout(() => resolve('foo'), 1000)
@@ -115,7 +115,7 @@ In other words, just add the flags and use that number as the bitmask. This bitm
 
     Flag | Rule
     --- | ---
-    1 | FunctionNesting
+    1 | PointFree
     2 | ImpureFunction
     4 | NoLoops
     8 | UnnecessaryBraces
@@ -153,7 +153,7 @@ Output only `ImpureFunction` and `NoLoops`:
 
     rupert -t foo.js --bitmask 6
 
-Output only `FunctionNesting`, `NoLoops` and `UnnecessaryBraces`:
+Output only `PointFree`, `NoLoops` and `UnnecessaryBraces`:
 
     rupert -t foo.js -b 13
 

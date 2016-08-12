@@ -2,7 +2,7 @@
 
 let bitmask;
 
-const FunctionNesting = 1;
+const PointFree = 1;
 const ImpureFunction = 2;
 const NoLoops = 4;
 const UnnecessaryBraces = 8;
@@ -57,11 +57,11 @@ const captureManager = (() => {
 })();
 
 const checkCallExpression = (parent, node, results) => {
-    if (bitmask & FunctionNesting) {
+    if (bitmask & PointFree) {
         if (node.type === 'CallExpression' && compareSignature(parent, node)) {
             results.push({
                 node: parent,
-                type: 'FunctionNesting'
+                type: 'PointFree'
             });
         }
     }
