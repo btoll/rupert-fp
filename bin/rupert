@@ -22,9 +22,9 @@ const fs = require('fs'),
     .alias('target', 't')
     .nargs('target', 1)
 
-    .describe('verbose', 'Show code snippets')
-    .alias('verbose', 'v')
-    .boolean('v')
+    .describe('verbosity', 'The level of verbosity')
+    .alias('v', 'v')
+    .alias('vv', 'vv')
 
     .help('help')
     .alias('help', 'h')
@@ -35,20 +35,25 @@ const fs = require('fs'),
         'NoLoops: 4',
         'UnnecessaryBraces: 8'
     ], 'Rules:')
+
     .argv,
 
-    // Default to raw.
     generator = require(
         `s/src/generator/${
-            argv.html ? 'html' :
-                argv.v ? 'log' :
-                'raw'
+            argv.html ? 'html' : 'log'
         }`
     ),
+
     visitor = require('../src/visitor'),
     h = require('s'),
     target = argv.target,
-    bitmask = Number(argv.bitmask);
+    bitmask = Number(argv.bitmask),
+
+    // Unfortunately, a single -v returns a Boolean while multiples (-vv, -vvv) return an Array.
+    verbosity = argv.v && Array.isArray(argv.v) ?
+        argv.v.length :
+            argv.v ?
+                1 : 0;
 
 visitor.setBitmask(
     !isNaN(bitmask) ?
@@ -74,7 +79,7 @@ if (!target) {
     });
 
     stdin.on('end', () => {
-        h.makeTree(buf, generator, true)
+        h.makeTree(buf, generator, verbosity, true)
         .then(logger.raw)
         .catch(logger.error);
     });
@@ -84,7 +89,7 @@ if (!target) {
             logger.error('There was a problem accessing the target!');
         } else {
             if (stats.isFile()) {
-                h.makeTree(target, generator, false)
+                h.makeTree(target, generator, verbosity)
                 .then(logger.raw)
                 .catch(logger.error);
             } else {
@@ -93,7 +98,7 @@ if (!target) {
                         logger.error('There was a problem globbing the files!');
                     } else {
                         files.forEach(file =>
-                            h.makeTree(file, generator, false)
+                            h.makeTree(file, generator, verbosity)
                             .then(data =>
                                 (logger.info(`Processing file ${file}`), logger.raw(`${data}`))
                             )
