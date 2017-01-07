@@ -39,7 +39,7 @@
   "dependencies": {
     "glob": "^7.0.3",
     "logger": "git+https://github.com/btoll/logger.git",
-    "s": "git+https://github.com/btoll/s.git",
+    "onf-static": "git+https://github.com/btoll/onf-static.git",
     "yargs": "^4.6.0"
   },
   "devDependencies": {
