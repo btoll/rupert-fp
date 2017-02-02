@@ -165,7 +165,7 @@ The following are all the same (dumps all nodes matching any rule):
 
 ## License
 
-[MIT](LICENSE)
+[GPLv3](COPYING)
 
 ## Author
 

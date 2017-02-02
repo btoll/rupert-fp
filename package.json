@@ -31,14 +31,14 @@
     "Esprima"
   ],
   "author": "Benjamin Toll <benjam72@yahoo.com> (http://www.benjamintoll.com)",
-  "license": "MIT",
+  "license": "GPLv3",
   "bugs": {
     "url": "https://github.com/btoll/rupert/issues"
   },
   "homepage": "https://github.com/btoll/rupert#readme",
   "dependencies": {
     "glob": "^7.0.3",
-    "logger": "git+https://github.com/btoll/logger.git",
+    "onf-logger": "git+https://github.com/btoll/onf-logger.git",
     "onf-static": "git+https://github.com/btoll/onf-static.git",
     "yargs": "^4.6.0"
   },
