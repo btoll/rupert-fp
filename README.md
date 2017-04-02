@@ -1,12 +1,12 @@
-# Rupert
+# Rupert-fp
 
-[![Build Status](https://travis-ci.org/btoll/rupert.svg?branch=master)](https://travis-ci.org/btoll/rupert)
+[![Build Status](https://travis-ci.org/btoll/rupert-fp.svg?branch=master)](https://travis-ci.org/btoll/rupert-fp)
 
-**Rupert** is a JavaScript static code analysis tool and functional programming helper. Its aim is to aid in the transition of moving from an object-oriented programming paradigm to a more functional one.
+**Rupert-fp** is a JavaScript static code analysis tool and functional programming helper. Its aim is to aid in the transition of moving from an object-oriented programming paradigm to a more functional one.
 
 ## How It Works
 
-**Rupert** analyzes a data stream for the following rules:
+**Rupert-fp** analyzes a data stream for the following rules:
 
 - PointFree
 - ImpureFunction
@@ -109,7 +109,7 @@ Note that the callbacks suffer from the same unnecessary nesting as described in
 
 ## Bit Flags and Bitmasks
 
-Instead of requiring that each type to be captured is specified on the command line (which can get quite verbose), **Rupert** allows for setting a bitmask that is the sum of the bit flags of the desired rules to use to filter the source code.
+Instead of requiring that each type to be captured is specified on the command line (which can get quite verbose), **Rupert-fp** allows for setting a bitmask that is the sum of the bit flags of the desired rules to use to filter the source code.
 
 In other words, just add the flags and use that number as the bitmask. This bitmask is then used to filter which nodes are printed. The default is 255, which will dump all nodes.
 
@@ -122,7 +122,7 @@ In other words, just add the flags and use that number as the bitmask. This bitm
 
 ## Installation
 
-`npm install https://github.com/btoll/rupert.git -g`
+`npm install https://github.com/btoll/rupert-fp.git -g`
 
 ## Usage
 
@@ -139,29 +139,29 @@ In other words, just add the flags and use that number as the bitmask. This bitm
 
 Dump the tree to `stdout` (raw):
 
-    rupert -t foo.js
+    rupert-fp -t foo.js
 
 Dump the tree to `stdout` (verbose, with code snippets that match the rules):
 
-    rupert -t foo.js -v
+    rupert-fp -t foo.js -v
 
 Create an `html` document of the same tree (always verbose):
 
-    rupert -t foo.js --html
+    rupert-fp -t foo.js --html
 
 Output only `ImpureFunction` and `NoLoops`:
 
-    rupert -t foo.js --bitmask 6
+    rupert-fp -t foo.js --bitmask 6
 
 Output only `PointFree`, `NoLoops` and `UnnecessaryBraces`:
 
-    rupert -t foo.js -b 13
+    rupert-fp -t foo.js -b 13
 
 The following are all the same (dumps all nodes matching any rule):
 
-    rupert -t foo.js
-    rupert -t foo.js -b 15
-    rupert -t foo.js --bitmask 255
+    rupert-fp -t foo.js
+    rupert-fp -t foo.js -b 15
+    rupert-fp -t foo.js --bitmask 255
 
 ## License
 
