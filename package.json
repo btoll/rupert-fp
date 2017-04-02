@@ -1,9 +1,9 @@
 {
-  "name": "rupert",
+  "name": "rupert-fp",
   "version": "0.2.0",
   "description": "Static analysis of functional patterns in JavaScript",
   "bin": {
-    "rupert": "./bin/rupert"
+    "rupert-fp": "./bin/rupert-fp"
   },
   "main": "./src/index.js",
   "directories": {
@@ -21,7 +21,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/btoll/rupert.git"
+    "url": "git+https://github.com/btoll/rupert-fp.git"
   },
   "keywords": [
     "functional programming",
@@ -33,9 +33,9 @@
   "author": "Benjamin Toll <benjam72@yahoo.com> (http://www.benjamintoll.com)",
   "license": "GPLv3",
   "bugs": {
-    "url": "https://github.com/btoll/rupert/issues"
+    "url": "https://github.com/btoll/rupert-fp/issues"
   },
-  "homepage": "https://github.com/btoll/rupert#readme",
+  "homepage": "https://github.com/btoll/rupert-fp#readme",
   "dependencies": {
     "glob": "^7.0.3",
     "onf-logger": "git+https://github.com/btoll/onf-logger.git",
