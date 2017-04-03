@@ -1,6 +1,6 @@
 {
   "name": "rupert-fp",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Static analysis of functional patterns in JavaScript",
   "bin": {
     "rupert-fp": "./bin/rupert-fp"
@@ -38,7 +38,7 @@
   "homepage": "https://github.com/btoll/rupert-fp#readme",
   "dependencies": {
     "glob": "^7.0.3",
-    "onf-logger": "git+https://github.com/btoll/onf-logger.git",
+    "onf-logger": "^0.2.0",
     "onf-static": "git+https://github.com/btoll/onf-static.git",
     "yargs": "^4.6.0"
   },

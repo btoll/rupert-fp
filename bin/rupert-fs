@@ -3,7 +3,7 @@
 
 const fs = require('fs'),
     glob = require('glob'),
-    logger = require('logger'),
+    logger = require('onf-logger'),
     argv = require('yargs')
     .usage('Usage: rupert-fp [options]')
 
@@ -11,7 +11,7 @@ const fs = require('fs'),
     .alias('bitmask', 'b')
     .nargs('bitmask', 1)
 
-    .describe('debug', 'Turns on debug logging')
+    .describe('debug', 'Turns on debug mode')
     .alias('debug', 'd')
     .boolean('debug')
 
@@ -22,7 +22,7 @@ const fs = require('fs'),
     .alias('target', 't')
     .nargs('target', 1)
 
-    .describe('verbosity', 'The level of verbosity')
+    .describe(' -v, --v', 'The level of verbosity')
     .alias('v', 'v')
     .alias('vv', 'vv')
 
@@ -39,13 +39,13 @@ const fs = require('fs'),
     .argv,
 
     generator = require(
-        `s/src/generator/${
+        `onf-static/src/generator/${
             argv.html ? 'html' : 'log'
         }`
     ),
 
     visitor = require('../src/visitor'),
-    h = require('s'),
+    h = require('onf-static'),
     target = argv.target,
     bitmask = Number(argv.bitmask),
 
@@ -55,11 +55,19 @@ const fs = require('fs'),
             argv.v ?
                 1 : 0;
 
+const options = {
+    useMap: false,
+    verbose: verbosity
+};
+
 visitor.setBitmask(
     !isNaN(bitmask) ?
         bitmask :
         255
 );
+
+// TODO: This is just a temporary solution.
+h.setDebugLevel(!argv.debug ? 'NONE' : 'DEBUG');
 
 // Mixin our node type functions.
 h.register(visitor);
@@ -79,7 +87,7 @@ if (!target) {
     });
 
     stdin.on('end', () => {
-        h.makeTree(buf, generator, verbosity, true)
+        h.makeTree(buf, generator, options, true)
         .then(logger.raw)
         .catch(logger.error);
     });
@@ -89,7 +97,7 @@ if (!target) {
             logger.error('There was a problem accessing the target!');
         } else {
             if (stats.isFile()) {
-                h.makeTree(target, generator, verbosity)
+                h.makeTree(target, generator, options)
                 .then(logger.raw)
                 .catch(logger.error);
             } else {
@@ -98,7 +106,7 @@ if (!target) {
                         logger.error('There was a problem globbing the files!');
                     } else {
                         files.forEach(file =>
-                            h.makeTree(file, generator, verbosity)
+                            h.makeTree(file, generator, options)
                             .then(data =>
                                 (logger.info(`Processing file ${file}`), logger.raw(`${data}`))
                             )

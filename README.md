@@ -129,10 +129,10 @@ In other words, just add the flags and use that number as the bitmask. This bitm
     Property | Description
     ------------ | -------------
     --bitmask, -b | The bitmask which determines the nodes to be captured
-    --debug, -d | Turns on debug logging
+    --debug, -d | Turns on debug mode
     --html | Creates an html document of the analysis
     --target, -t | The target to analyze
-    --verbose, -v | Show code snippets
+    -v, -vv | The level of verbosity
     --help, -h | Show help
 
 ## Examples
@@ -162,6 +162,16 @@ The following are all the same (dumps all nodes matching any rule):
     rupert-fp -t foo.js
     rupert-fp -t foo.js -b 15
     rupert-fp -t foo.js --bitmask 255
+
+## Known Issues
+
+The following nodes are not yet supported and parsing them will produce surprising and unexpected results (even errors):
+
+- ForStatement
+- ForInStatement
+- ForOfStatement
+- DoWhileStatement
+- WhileStatement
 
 ## License
 
