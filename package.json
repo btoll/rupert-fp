@@ -1,6 +1,6 @@
 {
   "name": "rupert-fp",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Static analysis of functional patterns in JavaScript",
   "bin": {
     "rupert-fp": "./bin/rupert-fp"
