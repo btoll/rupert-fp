@@ -141,9 +141,9 @@ Dump the tree to `stdout` (raw):
 
     rupert-fp -t foo.js
 
-Dump the tree to `stdout` (verbose, with code snippets that match the rules):
+Dump the tree to `stdout` (maximum verbosity, with code snippets that match the rules):
 
-    rupert-fp -t foo.js -v
+    rupert-fp -t foo.js -vv
 
 Create an `html` document of the same tree (always verbose):
 
