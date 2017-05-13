@@ -1,6 +1,7 @@
 # Rupert-fp
 
 [![Build Status](https://travis-ci.org/btoll/rupert-fp.svg?branch=master)](https://travis-ci.org/btoll/rupert-fp)
+[![npm](https://img.shields.io/npm/v/rupert-fp.svg)](https://www.npmjs.com/package/rupert-fp)
 
 **Rupert-fp** is a JavaScript static code analysis tool and functional programming helper. Its aim is to aid in the transition of moving from an object-oriented programming paradigm to a more functional one.
 
