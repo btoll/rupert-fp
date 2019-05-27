@@ -38,14 +38,8 @@ const fs = require('fs'),
 
     .argv,
 
-    generator = require(
-        argv.html ?
-            'onf-static/src/generator/html.js' :
-            'onf-static/src/generator/log.js'
-    ),
-
     visitor = require('../src/visitor'),
-    h = require('onf-static'),
+    onfStatic = require('onf-static'),
     target = argv.target,
     bitmask = Number(argv.bitmask),
 
@@ -55,24 +49,18 @@ const fs = require('fs'),
             argv.v ?
                 1 : 0;
 
-const options = {
-    destination: '.',
-    filename: 'foo',
-    useMap: false,
-    verbose: verbosity
-};
+onfStatic.setOptions({
+//    debugLevel: !argv.debug ? 'NONE' : 'DEBUG',
+    type: argv.html ? 'html' : 'log',
+    verbose: verbosity,
+    visitor // Mixin our node type functions.
+});
 
 visitor.setBitmask(
     !isNaN(bitmask) ?
         bitmask :
         255
 );
-
-// TODO: This is just a temporary solution.
-h.setDebugLevel(!argv.debug ? 'NONE' : 'DEBUG');
-
-// Mixin our node type functions.
-h.register(visitor);
 
 if (!target) {
     const stdin = process.stdin;
@@ -88,18 +76,18 @@ if (!target) {
         }
     });
 
-    stdin.on('end', () => {
-        h.makeTree(buf, generator, options, true)
+    stdin.on('end', () =>
+        onfStatic.makeTree(buf, true)
         .then(logger.raw)
-        .catch(logger.error);
-    });
+        .catch(logger.error)
+    );
 } else {
     fs.stat(target, (err, stats) => {
         if (err) {
             logger.error('There was a problem accessing the target!');
         } else {
             if (stats.isFile()) {
-                h.makeTree(target, generator, options)
+                onfStatic.makeTree(target)
                 .then(logger.raw)
                 .catch(logger.error);
             } else {
@@ -108,9 +96,12 @@ if (!target) {
                         logger.error('There was a problem globbing the files!');
                     } else {
                         files.forEach(file =>
-                            h.makeTree(file, generator, options)
+                            onfStatic.makeTree(file)
                             .then(data =>
-                                (logger.info(`Processing file ${file}`), logger.raw(`${data}`))
+                                (
+                                    logger.info(`Processing file ${file}`),
+                                    logger.raw(`${data}`)
+                                )
                             )
                             .catch(logger.error)
                         );

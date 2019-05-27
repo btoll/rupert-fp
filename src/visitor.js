@@ -1,6 +1,6 @@
 'use strict';
 
-let bitmask;
+let bitmask = 255;
 
 const PointFree = 1;
 const ImpureFunction = 2;
