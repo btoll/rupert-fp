@@ -8,12 +8,26 @@ const NoLoops = 4;
 const UnnecessaryBraces = 8;
 
 const list = new Set([
-    'ForStatement',
+    'DoWhileStatement',
     'ForInStatement',
     'ForOfStatement',
-    'DoWhileStatement',
+    'ForStatement',
+    'IfStatement',
+    'TryStatement',
     'WhileStatement'
 ]);
+
+const captureFreeVariables = (node, results) => {
+    const ctx = captureManager.capture(null);
+
+    if (ctx.free.size) {
+        results.push({
+            node,
+            type: 'ImpureFunction',
+            desc: `Free variables: ${Array.from(ctx.free.values()).join(', ')}`
+        });
+    }
+};
 
 const captureManager = (() => {
     const stack = [];
@@ -26,10 +40,9 @@ const captureManager = (() => {
                 bound: new Set(),
                 free: new Set(),
                 params: map ?
-                    new Set(map.split(',').reduce((acc, curr) => {
-                        acc.push(curr);
-                        return acc;
-                    }, [])) :
+                    new Set(map.split(',').reduce((acc, curr) => (
+                        acc.push(curr), acc
+                    ), [])) :
                 new Set()
             });
         },
@@ -67,7 +80,7 @@ const checkCallExpression = (parent, node, results) => {
     }
 };
 
-const checkFunctionExpression = function (node, parent, results) {
+const checkFunctionExpression = function (node, parent, results, check) {
     const bodies = node.body.body;
     const impureFunctionFlag = !!(bitmask & ImpureFunction);
 
@@ -84,7 +97,7 @@ const checkFunctionExpression = function (node, parent, results) {
                 if (!(
                     list.has(type) ||
                     isObjectExpression(firstBody.argument) ||
-                    type === 'IfStatement'
+                    check(node)
                 )) {
                     results.push({
                         node,
@@ -104,16 +117,8 @@ const checkFunctionExpression = function (node, parent, results) {
         this.visit(node.body, node, results);
     }
 
-    // TODO: DRY!
     if (impureFunctionFlag) {
-        const ctx = captureManager.capture(null);
-        if (ctx.free.size) {
-            results.push({
-                node,
-                type: 'ImpureFunction',
-                desc: `Free variables: ${Array.from(ctx.free.values()).join(', ')}`
-            });
-        }
+        captureFreeVariables(node, results);
     }
 };
 
@@ -139,17 +144,48 @@ const compareSignature = (caller, callee) => {
         false;
 };
 
-const mapParams = params =>
-    params.map(arg => arg.name).join(',');
-
 // An ObjectExpression cannot be a candidate for an UnnecessaryBrace type b/c the interpreter determines
 // that a brace following a fat arrow function is a block. In other words, it is not able to accurately
 // determine if the brace signifies the beginning of a block or an ObjectExpression.
-const isObjectExpression = node => node && node.type === 'ObjectExpression';
+const isObjectExpression = node =>
+    node && node.type === 'ObjectExpression';
+
+const mapParams = params =>
+    params.map(arg => arg.name).join(',');
 
 module.exports = {
-    ArrowFunctionExpression: checkFunctionExpression,
-    FunctionExpression: checkFunctionExpression,
+    ArrowFunctionExpression(node, parent, results) {
+        checkFunctionExpression.call(
+            this,
+            node,
+            parent,
+            results,
+            () => true
+        );
+    },
+
+    FunctionExpression(node, parent, results) {
+        // We have to check the `type` one block up for `BlockStatement` in the case of
+        // syntax like the following:
+        //
+        //      const obj = {
+        //          f() {
+        //              return 5;
+        //          },
+        //      };
+        //
+        //      I.e., ObjectExpression -> FunctionExpression -> BlockStatement
+        //
+        checkFunctionExpression.call(
+            this,
+            node,
+            parent,
+            results,
+            node =>
+                node.type === 'FunctionExpression' &&
+                node.body.type === 'BlockStatement'
+        );
+    },
 
     FunctionDeclaration(node, parent, results) {
         const impureFunctionFlag = !!(bitmask & ImpureFunction);
@@ -160,16 +196,8 @@ module.exports = {
 
         node.body.body.forEach(body => this.visit(body, node, results));
 
-        // TODO: DRY!
         if (impureFunctionFlag) {
-            const ctx = captureManager.capture(null);
-            if (ctx.free.size) {
-                results.push({
-                    node,
-                    type: 'ImpureFunction',
-                    desc: `Free variables: ${Array.from(ctx.free.values()).join(', ')}`
-                });
-            }
+            captureFreeVariables(node, results);
         }
     },
 
