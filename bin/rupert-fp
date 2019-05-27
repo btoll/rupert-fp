@@ -39,9 +39,9 @@ const fs = require('fs'),
     .argv,
 
     generator = require(
-        `onf-static/src/generator/${
-            argv.html ? 'html' : 'log'
-        }`
+        argv.html ?
+            'onf-static/src/generator/html.js' :
+            'onf-static/src/generator/log.js'
     ),
 
     visitor = require('../src/visitor'),
@@ -56,6 +56,8 @@ const fs = require('fs'),
                 1 : 0;
 
 const options = {
+    destination: '.',
+    filename: 'foo',
     useMap: false,
     verbose: verbosity
 };
