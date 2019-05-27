@@ -13,11 +13,10 @@
     "clean": "rm -rf build coverage",
     "compile": "babel -d build src",
     "coverage": "JASMINE_CONFIG_PATH=jasmine.json istanbul cover jasmine --captureExceptions",
-    "coveralls": "npm run coverage && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
+    "coveralls": "npm run coverage && cat ./coverage/lcov.info | coveralls && rm -rf ./coverage",
     "lint": "eslint bin spec src",
     "specs": "JASMINE_CONFIG_PATH=jasmine.json jasmine",
-    "test": "npm run clean && npm run lint && npm run compile && npm run specs",
-    "watch": "bash ./scripts/watch.bash"
+    "test": "npm run clean && npm run lint && npm run compile && npm run specs"
   },
   "repository": {
     "type": "git",
@@ -51,4 +50,3 @@
     "jasmine-core": "^2.4.1"
   }
 }
-
