@@ -53,7 +53,7 @@ onfStatic.setOptions({
 //    debugLevel: !argv.debug ? 'NONE' : 'DEBUG',
     type: argv.html ? 'html' : 'log',
     verbose: verbosity,
-    visitor // Mixin our node type functions.
+    visitor: visitor.refs // Mixin our node type functions.
 });
 
 visitor.setBitmask(

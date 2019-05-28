@@ -123,7 +123,11 @@ In other words, just add the flags and use that number as the bitmask. This bitm
 
 ## Installation
 
-`npm install https://github.com/btoll/rupert-fp.git -g`
+`npm i -g rupert-fp`
+
+## Code Generattion
+
+**rupert-fs** will use the default `log` and `html` generators provided by the `onf-static` framework.  If you need more customization, you can develop your own and then tell the framework about it by calling setting the `generator` field in the `setOptions` call.
 
 ## Usage
 

@@ -154,70 +154,71 @@ const mapParams = params =>
     params.map(arg => arg.name).join(',');
 
 module.exports = {
-    ArrowFunctionExpression(node, parent, results) {
-        checkFunctionExpression.call(
-            this,
-            node,
-            parent,
-            results,
-            () => true
-        );
-    },
+    refs: {
+        ArrowFunctionExpression(node, parent, results) {
+            checkFunctionExpression.call(
+                this,
+                node,
+                parent,
+                results,
+                () => true
+            );
+        },
 
-    FunctionExpression(node, parent, results) {
-        // We have to check the `type` one block up for `BlockStatement` in the case of
-        // syntax like the following:
-        //
-        //      const obj = {
-        //          f() {
-        //              return 5;
-        //          },
-        //      };
-        //
-        //      I.e., ObjectExpression -> FunctionExpression -> BlockStatement
-        //
-        checkFunctionExpression.call(
-            this,
-            node,
-            parent,
-            results,
-            node =>
-                node.type === 'FunctionExpression' &&
-                node.body.type === 'BlockStatement'
-        );
-    },
+        FunctionExpression(node, parent, results) {
+            // We have to check the `type` one block up for `BlockStatement` in the case of
+            // syntax like the following:
+            //
+            //      const obj = {
+            //          f() {
+            //              return 5;
+            //          },
+            //      };
+            //
+            //      I.e., ObjectExpression -> FunctionExpression -> BlockStatement
+            //
+            checkFunctionExpression.call(
+                this,
+                node,
+                parent,
+                results,
+                node =>
+                    node.type === 'FunctionExpression' &&
+                    node.body.type === 'BlockStatement'
+            );
+        },
 
-    FunctionDeclaration(node, parent, results) {
-        const impureFunctionFlag = !!(bitmask & ImpureFunction);
+        FunctionDeclaration(node, parent, results) {
+            const impureFunctionFlag = !!(bitmask & ImpureFunction);
 
-        if (impureFunctionFlag) {
-            captureManager.init(node.params);
+            if (impureFunctionFlag) {
+                captureManager.init(node.params);
+            }
+
+            node.body.body.forEach(body => this.visit(body, node, results));
+
+            if (impureFunctionFlag) {
+                captureFreeVariables(node, results);
+            }
+        },
+
+        ForStatement: checkLoop,
+        ForInStatement: checkLoop,
+        ForOfStatement: checkLoop,
+        DoWhileStatement: checkLoop,
+        WhileStatement: checkLoop,
+
+        Identifier(node, parent) {
+            if (bitmask & ImpureFunction) {
+                captureManager.capture(node.name, (parent.type === 'VariableDeclaration'));
+            }
+        },
+
+        ThisExpression() {
+            captureManager.capture('this');
         }
-
-        node.body.body.forEach(body => this.visit(body, node, results));
-
-        if (impureFunctionFlag) {
-            captureFreeVariables(node, results);
-        }
     },
 
-    ForStatement: checkLoop,
-    ForInStatement: checkLoop,
-    ForOfStatement: checkLoop,
-    DoWhileStatement: checkLoop,
-    WhileStatement: checkLoop,
-
-    Identifier(node, parent) {
-        if (bitmask & ImpureFunction) {
-            captureManager.capture(node.name, (parent.type === 'VariableDeclaration'));
-        }
-    },
-
-    ThisExpression() {
-        captureManager.capture('this');
-    },
-
-    // TODO: This isn't a node type!
     setBitmask(b) {
         bitmask = b;
     }
